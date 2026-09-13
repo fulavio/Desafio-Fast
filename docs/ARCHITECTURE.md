@@ -18,7 +18,9 @@ Como o backend é uma API, não há Razor Views. O Angular exerce a função de 
 │   └── TESTING.md
 ├── scripts/
 │   ├── setup.sh
-│   └── check.sh
+│   ├── setup.ps1
+│   ├── check.sh
+│   └── check.ps1
 ├── backend/
 │   ├── Fast.Workshops.sln
 │   ├── Fast.Workshops.Api/

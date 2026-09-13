@@ -21,7 +21,7 @@ Responsabilidades e estrutura completa: [docs/ARCHITECTURE.md](docs/ARCHITECTURE
 - SDK .NET LTS definido por `global.json`;
 - Node.js na versão definida pelo frontend;
 - npm;
-- Bash para os scripts de automação.
+- Bash ou, no Windows, PowerShell 5.1 ou superior para os scripts de automação.
 
 Nenhuma credencial, banco de dados ou configuração manual é necessária.
 
@@ -31,6 +31,12 @@ Prepare as dependências de maneira idempotente:
 
 ```bash
 ./scripts/setup.sh
+```
+
+No Windows, execute no PowerShell:
+
+```powershell
+.\scripts\setup.ps1
 ```
 
 O comando pode ser executado novamente sem exigir limpeza manual.
@@ -57,6 +63,12 @@ Execute toda a validação, sem interação:
 
 ```bash
 ./scripts/check.sh
+```
+
+ou
+
+```powershell
+.\scripts\check.ps1
 ```
 
 O script verifica formatação, build, lint e testes dos dois projetos. Consulte [docs/TESTING.md](docs/TESTING.md) para testes focados e regras de isolamento.

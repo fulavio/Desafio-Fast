@@ -18,6 +18,13 @@ Após executar `./scripts/setup.sh`, valide o repositório com:
 ./scripts/check.sh
 ```
 
+ou
+
+```powershell
+.\scripts\setup.ps1
+.\scripts\check.ps1
+```
+
 ## Backend
 
 ```bash
