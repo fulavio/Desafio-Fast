@@ -1,0 +1,69 @@
+<a class="back-link" routerLink="/atas" queryParamsHandling="preserve"
+  >← Voltar para as atas</a
+>
+@if (view().loading) {
+  <app-loading-state />
+} @else if (view().error) {
+  <app-error-state [message]="view().error" (retry)="retry()" />
+} @else if (view().value; as detail) {
+  <section class="page-heading detail-heading">
+    <p class="eyebrow">WORKSHOP · FAST SOLUÇÕES</p>
+    <h1>{{ detail.workshop.name }}<span>.</span></h1>
+    <p class="intro">
+      {{ detail.workshop.heldAt.slice(0, 10) | date: "dd/MM/yyyy" : "UTC" }} ·
+      {{ detail.workshop.heldAt.slice(11, 16) }} ({{
+        detail.workshop.heldAt.slice(19)
+      }})
+    </p>
+  </section>
+  <section class="description-panel">
+    <h2>Sobre o encontro</h2>
+    <p>{{ detail.workshop.description }}</p>
+  </section>
+  <section aria-labelledby="participants-title">
+    <div class="results-heading">
+      <h2 id="participants-title">Quem participou</h2>
+      <span
+        >{{ detail.collaborators.length }}
+        {{
+          detail.collaborators.length === 1 ? "participante" : "participantes"
+        }}</span
+      >
+    </div>
+    @if (removalError()) {
+      <p role="alert" class="removal-error">{{ removalError() }}</p>
+    }
+    <p role="status">{{ removalNotice() }}</p>
+    @if (detail.collaborators.length === 0) {
+      <app-empty-state
+        title="Nenhum participante registrado"
+        description="Este workshop ainda não possui participações na ata."
+      />
+    } @else {
+      <ul class="participant-list">
+        @for (person of detail.collaborators; track person.id) {
+          <li>
+            <span class="avatar" aria-hidden="true">{{
+              person.name.slice(0, 1)
+            }}</span
+            ><span class="participant-name">{{ person.name }}</span>
+            <button
+              type="button"
+              class="remove-participant"
+              [disabled]="removingId() !== null"
+              [attr.aria-label]="'Remover ' + person.name + ' da ata'"
+              (click)="removeParticipant(person.id)"
+            >
+              {{ removingId() === person.id ? "Removendo…" : "Remover" }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+} @else {
+  <app-empty-state
+    title="Ata não encontrada"
+    description="Não há ata disponível para este workshop. Volte para a lista de atas."
+  />
+}

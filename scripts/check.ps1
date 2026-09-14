@@ -21,6 +21,9 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & npm.cmd --prefix $frontendRoot run lint
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+& npm.cmd --prefix $frontendRoot run build
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 & npm.cmd --prefix $frontendRoot test -- --watch=false
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

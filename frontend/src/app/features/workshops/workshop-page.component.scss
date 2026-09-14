@@ -1,0 +1,30 @@
+.participant-name {
+  flex: 1;
+  min-width: 0;
+}
+.remove-participant {
+  background: #fff;
+  color: #8a3025;
+  border: 1px solid #b66e64;
+}
+.remove-participant:hover {
+  background: #fff0ed;
+}
+.remove-participant:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.removal-error {
+  color: #8a3025;
+}
+@media (max-width: 600px) {
+  .participant-list li {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    padding: 16px;
+  }
+  .remove-participant {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

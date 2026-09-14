@@ -1,0 +1,117 @@
+<section class="page-heading">
+  <p class="eyebrow">CONHECIMENTO QUE CONECTA</p>
+  <h1>Atas de presença<span>.</span></h1>
+  <p class="intro">
+    Explore os workshops e acompanhe quem fez parte de cada encontro.
+  </p>
+</section>
+
+<section class="filter-panel" aria-labelledby="filter-title">
+  <div class="filter-heading">
+    <h2 id="filter-title">Encontre um encontro</h2>
+    <span>Filtre para explorar</span>
+  </div>
+  <form (ngSubmit)="applyFilters()">
+    <div class="field">
+      <label for="workshop-name">Workshop</label
+      ><input
+        id="workshop-name"
+        name="workshopNome"
+        placeholder="Busque pelo nome"
+        [(ngModel)]="filterDraft.workshopNome"
+      />
+    </div>
+    <div class="field">
+      <label for="workshop-date">Data do workshop</label
+      ><input
+        id="workshop-date"
+        name="data"
+        type="date"
+        [(ngModel)]="filterDraft.data"
+      />
+    </div>
+    <div class="field">
+      <label for="collaborator-name">Colaborador</label
+      ><input
+        id="collaborator-name"
+        name="colaborador"
+        placeholder="Nome do participante"
+        [(ngModel)]="filterDraft.colaborador"
+      />
+    </div>
+    <button type="submit">
+      Aplicar filtros <span aria-hidden="true">↗</span>
+    </button>
+    <button class="text-button" type="button" (click)="clearFilters()">
+      Limpar
+    </button>
+  </form>
+</section>
+
+@if (view().loading) {
+  <app-loading-state />
+} @else if (view().error) {
+  <app-error-state [message]="view().error" (retry)="retry()" />
+} @else {
+  <div class="results-heading">
+    <h2>Encontros registrados</h2>
+    <span role="status"
+      >{{ visibleRecords().length }}
+      {{
+        visibleRecords().length === 1 ? "ata encontrada" : "atas encontradas"
+      }}</span
+    >
+  </div>
+  @if (visibleRecords().length === 0) {
+    <app-empty-state />
+  } @else {
+    <div class="attendance-grid">
+      @for (record of visibleRecords(); track record.id) {
+        <article class="workshop-card">
+          <div class="card-top">
+            <span class="tag">WORKSHOP</span
+            ><span class="record-number"
+              >ATA #{{ record.id.toString().padStart(3, "0") }}</span
+            >
+          </div>
+          <p class="card-date">
+            <span aria-hidden="true">◷</span>
+            {{
+              record.workshop.heldAt.slice(0, 10) | date: "dd/MM/yyyy" : "UTC"
+            }}
+          </p>
+          <h3>
+            <a
+              [routerLink]="['/workshops', record.workshop.id]"
+              queryParamsHandling="preserve"
+              >{{ record.workshop.name }}</a
+            >
+          </h3>
+          <p class="card-description">{{ record.workshop.description }}</p>
+          <div class="participants">
+            <p>
+              {{ record.collaborators.length }}
+              {{
+                record.collaborators.length === 1
+                  ? "participante"
+                  : "participantes"
+              }}
+            </p>
+            <ul aria-label="Participantes">
+              @for (person of record.collaborators; track person.id) {
+                <li>{{ person.name }}</li>
+              }
+            </ul>
+          </div>
+          <a
+            class="detail-link"
+            [routerLink]="['/workshops', record.workshop.id]"
+            queryParamsHandling="preserve"
+            [attr.aria-label]="'Ver detalhes de ' + record.workshop.name"
+            >Ver detalhes <span aria-hidden="true">↗</span></a
+          >
+        </article>
+      }
+    </div>
+  }
+}

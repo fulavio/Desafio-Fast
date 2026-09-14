@@ -93,6 +93,8 @@ Controllers validam binding, chamam services e transformam resultados em status 
 
 Services executam cadastros, consultas, filtros, ordenação e mapeamento de DTOs. Permanecem classes concretas. Não crie handlers, commands, queries, use cases ou mediators.
 
+`ResponseProjection` compartilha o mapeamento para DTOs e a ordenação de participantes. `InputRule` centraliza validações de texto, IDs e timestamps. `ApiExceptionFilter` traduz falhas conhecidas em `ProblemDetails`; `BindingProblem` trata solicitações incompatíveis com os contratos.
+
 ### Repositories
 
 Defina interfaces pequenas e específicas:
@@ -102,6 +104,8 @@ Defina interfaces pequenas e específicas:
 - `IAttendanceRecordRepository`.
 
 Implemente-as em `Repositories/InMemory`. Compartilhe o estado por `InMemoryDatabase`, registrado como singleton no container, nunca como singleton estático. Repositories e services são scoped. Garanta thread safety e não devolva coleções internas mutáveis.
+
+O armazenamento usa um lock por instância de `InMemoryDatabase`. IDs, criação exclusiva de atas e alterações de participantes são atômicos. Models de workshop e colaborador são imutáveis; atas retornadas pelos repositories são snapshots independentes.
 
 Não use repositório genérico nem Unit of Work próprio. As interfaces existem porque a persistência será substituída futuramente; não implemente EF Core ou banco nesta entrega.
 
@@ -144,6 +148,8 @@ Rotas:
 - rotas vazia e desconhecida redirecionam para `/atas`.
 
 O frontend consome a API como fonte de verdade; mocks existem somente em testes. Use signals e services Angular simples, sem biblioteca externa de estado. Preserve filtros na query string. Envie workshop e data à API e aplique o filtro de colaborador no cliente.
+
+`WorkshopsApiService` concentra HTTP. `requestState` compartilha estados de carregamento/erro; `switchMap` cancela buscas anteriores e `takeUntilDestroyed` encerra subscriptions. No Angular, as dependências são resolvidas no construtor com `inject()` e passadas aos métodos que observam as rotas, seguindo o lint oficial. O backend usa parâmetros de construtor. A página de detalhes consulta `GET /api/atas` sem filtros e encontra a ata por `workshop.id`. Workshops sem ata não aparecem nessa consulta; a página informa que a ata não foi encontrada. Cada participante tem a ação Remover, que usa `DELETE /api/atas/{ataId}/colaboradores/{colaboradorId}`. A UI bloqueia cliques repetidos durante a remoção, atualiza os participantes após sucesso e mantém a lista com mensagem de erro em caso de falha.
 
 A UI deve exibir loading, erro e lista vazia; usar labels visíveis; navegar por links reais; funcionar a partir de 320 px; oferecer teclado, foco visível e contraste adequado.
 

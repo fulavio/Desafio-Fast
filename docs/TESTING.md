@@ -27,6 +27,10 @@ ou
 
 ## Backend
 
+Os scripts executam, em sequência: `dotnet format --verify-no-changes`, build e testes .NET, Prettier, ESLint, build de produção Angular e testes Angular sem watch. A primeira falha interrompe a execução com código diferente de zero.
+
+No Windows, use PowerShell ou Git Bash com as ferramentas Windows no PATH. WSL é um ambiente separado e precisa de .NET/Node próprios. Feche os servidores antes de executar o setup ou os checks, pois executáveis podem estar bloqueados no Windows.
+
 ```bash
 dotnet test backend/Fast.Workshops.sln --no-restore
 ```
@@ -43,6 +47,8 @@ Cubra:
 - status e JSON de cada endpoint.
 
 Use o servidor de testes do ASP.NET Core para integração. Cada teste cria e controla seu próprio estado.
+
+Implementação: xUnit e `WebApplicationFactory<Program>` em ambiente `Testing`, sem seed automático. Os testes de regras usam repositories reais em memória; os de concorrência exercitam IDs atômicos, ata única, associação idempotente e snapshots. Datas são constantes e nenhuma chamada usa rede externa.
 
 ## Frontend
 
@@ -62,6 +68,8 @@ Cubra:
 - renderização do workshop e participantes.
 
 Use as ferramentas oficiais do Angular. Simule somente a fronteira HTTP com classes fake nomeadas.
+
+Implementação: `ng test` com o builder oficial `@angular/build:unit-test`, Vitest e jsdom. `FakeWorkshopServer` encapsula `HttpTestingController` e verifica parâmetros; componentes e roteador são reais (`RouterTestingHarness`). A suíte cobre retry, cancelamento de buscas, preservação dos filtros, links sem parâmetros vazios, estados e foco do atalho de conteúdo. Os detalhes são testados usando exclusivamente GET /api/atas, incluindo ausência da ata e seleção pelo ID do workshop. Os testes de remoção verificam o ID da ata, bloqueio de duplicidade, sucesso, último participante e falha com nova tentativa. Não exige Chrome instalado.
 
 ## Verificações manuais
 

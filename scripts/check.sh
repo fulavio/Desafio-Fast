@@ -10,6 +10,7 @@ dotnet build "$backend_solution" --no-restore
 dotnet test "$backend_solution" --no-restore --no-build
 npm --prefix "$frontend_root" run format:check
 npm --prefix "$frontend_root" run lint
+npm --prefix "$frontend_root" run build
 npm --prefix "$frontend_root" test -- --watch=false
 
 echo "Todas as verificações passaram."

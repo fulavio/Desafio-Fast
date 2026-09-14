@@ -94,14 +94,20 @@ Parâmetros combinados usam `AND`. Sem parâmetros, retorna todas as atas. Orden
 
 Data inválida retorna `400 Bad Request`. Ausência de resultados retorna `200 OK` com `[]`.
 
+A página de detalhes consulta este endpoint sem filtros e localiza a ata por `workshop.id`. Sem uma ata correspondente, exibe “Ata não encontrada”. A remoção de presença usa o `id` da ata no endpoint `DELETE`, preservando o cadastro do colaborador.
+
 ## Validação
 
 - `name`: obrigatório e não pode conter apenas espaços;
 - `description`: obrigatória e não pode conter apenas espaços;
-- `heldAt`: ISO 8601 válido;
+- `heldAt`: ISO 8601 com horário, segundos e fuso (`Z` ou `±HH:mm`); aceita até sete casas de fração de segundo;
 - IDs: inteiros positivos;
 - `data`: formato exato `yyyy-MM-dd`;
 - remova espaços externos antes de salvar ou filtrar;
 - não imponha unicidade aos nomes.
 
 Mensagens de erro incluem o valor problemático e o formato esperado, sem stack traces ou detalhes internos. Erros esperados nunca retornam `500`.
+
+O filtro `data` considera a data de calendário no fuso armazenado, sem convertê-la para UTC. `data=` vazio é inválido; para não filtrar por data, omita o parâmetro. A ordenação considera o instante do workshop e usa nome como desempate, sem diferenciar maiúsculas de minúsculas.
+
+Erros de binding retornam `400` com o campo e o formato esperado. Quando o JSON não pode ser convertido, a mensagem identifica `JSON inválido ou incompatível` sem repetir o corpo da requisição. O middleware padrão fornece `ProblemDetails` para falhas inesperadas, sem expor stack traces.
