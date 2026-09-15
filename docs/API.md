@@ -2,6 +2,8 @@
 
 Todos os endpoints usam JSON. Erros seguem `ProblemDetails` (`application/problem+json`) com `status`, `title` e `detail`. Arrays vazios nunca são serializados como `null`.
 
+Os contratos são os mesmos em `InMemory` e `MySql`. O armazenamento é selecionado ao iniciar a API, sem migração nem fallback automático. O modo MySQL preserva dados entre reinícios e não insere exemplos de desenvolvimento. Falha de conexão/schema impede a inicialização; indisponibilidade durante uma requisição produz erro inesperado `500` em `ProblemDetails`, sem detalhes internos.
+
 No ambiente `Development`, a documentação interativa fica em [Swagger UI](http://localhost:5000/swagger) e o contrato gerado em [OpenAPI JSON](http://localhost:5000/swagger/v1/swagger.json). Os controllers declaram descrições, parâmetros e respostas com seus DTOs e códigos HTTP. O botão **Try it out** permite executar as operações na API local.
 
 ## `POST /api/workshops`

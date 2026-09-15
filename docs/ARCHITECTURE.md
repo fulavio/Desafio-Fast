@@ -29,7 +29,8 @@ Como o backend é uma API, não há Razor Views. O Angular exerce a função de 
 │   │   ├── Contracts/
 │   │   ├── Services/
 │   │   ├── Repositories/
-│   │   │   └── InMemory/
+│   │   │   ├── InMemory/
+│   │   │   └── MySql/
 │   │   ├── Program.cs
 │   │   └── Fast.Workshops.Api.csproj
 │   └── tests/
@@ -54,7 +55,7 @@ Não crie uma pasta até que ela tenha conteúdo real.
 Fluxo de uma requisição:
 
 ```text
-HTTP -> Controller -> Service -> Repository interface -> Repository em memória
+HTTP -> Controller -> Service -> Repository interface -> Repository em memória ou MySQL
 ```
 
 ### Models
@@ -107,7 +108,15 @@ Implemente-as em `Repositories/InMemory`. Compartilhe o estado por `InMemoryData
 
 O armazenamento usa um lock por instância de `InMemoryDatabase`. IDs, criação exclusiva de atas e alterações de participantes são atômicos. Models de workshop e colaborador são imutáveis; atas retornadas pelos repositories são snapshots independentes.
 
-Não use repositório genérico nem Unit of Work próprio. As interfaces existem porque a persistência será substituída futuramente; não implemente EF Core ou banco nesta entrega.
+Não use repositório genérico nem Unit of Work próprio. As mesmas interfaces têm implementações MySQL em `Repositories/MySql`, com MySqlConnector e SQL parametrizado. Cada operação abre e descarta uma conexão do pool; `MySqlDataSource` é singleton no container e repositories continuam scoped.
+
+`schema.sql` usa InnoDB, IDs AUTO_INCREMENT, chave única por workshop e chave primária composta para participantes. Foreign keys impedem associações órfãs. Violações de unicidade e referência são convertidas nas exceções existentes. A leitura de atas e participantes usa um único SELECT com LEFT JOIN para produzir snapshots coerentes. Filtros, ordenação e projeção permanecem nos services.
+
+`held_at` guarda o formato ISO 8601 round-trip em VARCHAR(33), preservando o offset e sete casas decimais; Textos usam utf8mb4 e LONGTEXT, sem introduzir um limite curto nos contratos HTTP.
+
+`PersistenceRegistration` seleciona os três repositories na inicialização por `Persistence:Provider` (`InMemory` por padrão ou `MySql`). Configuração desconhecida e conexão vazia/inválida falham imediatamente. MySQL exige `ConnectionStrings:Workshops` e verifica acesso às tabelas antes de iniciar HTTP. Não há fallback ou migração de dados entre modos; reinicie para trocar. Credenciais ficam em User Secrets no desenvolvimento ou na configuração do ambiente.
+
+O Compose usa `mysql:latest` com volume nomeado em `/var/lib/mysql`, bind da porta somente em loopback e schema inicial em `/docker-entrypoint-initdb.d`. Não aplica alterações de schema em volumes existentes. O banco externo deve receber o mesmo schema previamente; futuras evoluções exigem migrações explícitas.
 
 ### Configuração
 
@@ -120,7 +129,7 @@ Não use repositório genérico nem Unit of Work próprio. As interfaces existem
 
 ### Seed
 
-O seed de desenvolvimento executa uma vez e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. Testes controlam o próprio estado e não dependem desse seed.
+O seed executa uma vez por inicialização somente em `Development` com `InMemory` e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. MySQL começa vazio e preserva os cadastros existentes, sem seed automático. Testes controlam o próprio estado e não dependem desse seed.
 
 ## Frontend Angular
 

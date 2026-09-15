@@ -2,7 +2,7 @@
 
 ## Missão
 
-Implemente o desafio FullStack de participação em workshops da FAST Soluções. Use um único backend ASP.NET Core MVC e um frontend Angular. Leia este arquivo antes de alterar código.
+Implementar o rastreamento de participação em workshops da FAST Soluções. Use um único backend ASP.NET Core MVC e um frontend Angular. Leia este arquivo antes de alterar código.
 
 ## Documentação obrigatória
 
@@ -15,10 +15,9 @@ Se uma mudança afetar comportamento, arquitetura, comandos ou contratos, atuali
 
 ## Escopo
 
-- Implemente somente os requisitos obrigatórios do desafio.
-- Não implemente banco de dados, autenticação, autorização ou gráficos.
-- Mantenha os dados em memória nesta entrega.
-- Preserve a possibilidade de trocar repositories em memória por persistência real posteriormente.
+- Não implemente autenticação, autorização ou gráficos.
+- Ofereça memória (padrão) e MySQL, selecionados por configuração na inicialização, sem migração ou fallback automático.
+- Mantenha Docker Compose com mysql e volume persistente para desenvolvimento.
 - Não aplique Clean Architecture, arquitetura hexagonal ou onion architecture.
 - Não crie projetos `Domain`, `Application` ou `Infrastructure`.
 - Não adicione CQRS, MediatR, Unit of Work próprio, repositório genérico, mensageria, cache distribuído ou microserviços.
@@ -30,7 +29,7 @@ Se uma mudança afetar comportamento, arquitetura, comandos ou contratos, atuali
 - Controllers validam HTTP, chamam services e produzem respostas.
 - Services concentram regras, filtros, ordenação e mapeamento de DTOs.
 - Services dependem de `IWorkshopRepository`, `ICollaboratorRepository` e `IAttendanceRecordRepository`.
-- Implemente os repositories atuais em `Repositories/InMemory`.
+- Implemente os repositories em `Repositories/InMemory` e `Repositories/MySql`, usando as mesmas interfaces.
 - Use o container nativo para injeção por construtor. Nunca use singleton estático.
 - O Angular é a camada de visualização; não use Razor Views.
 
@@ -56,7 +55,7 @@ Se uma mudança afetar comportamento, arquitetura, comandos ou contratos, atuali
 
 - Toda função nova recebe teste; todo bug recebe teste de regressão.
 - Use classes fake nomeadas para I/O; não use stubs inline.
-- Testes seguem F.I.R.S.T. e não dependem de rede, relógio real, ordem, credenciais ou preparação manual.
+- Testes seguem F.I.R.S.T. e não dependem de relógio real, ordem, credenciais ou preparação manual. Testes em memória não usam rede; integração MySQL usa containers locais descartáveis, preparados automaticamente por Testcontainers.
 - Execute setup idempotente com `./scripts/setup.sh`.
 - Execute toda a validação headless com `./scripts/check.sh`.
 - Não remova testes, reduza assertions ou desabilite regras para obter sucesso.

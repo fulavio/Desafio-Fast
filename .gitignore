@@ -6,3 +6,6 @@ frontend/dist/
 frontend/coverage/
 .local/
 *.log
+.env
+.env.*
+!.env.example

@@ -6,13 +6,15 @@
 - Toda correção recebe teste de regressão.
 - Testes seguem F.I.R.S.T.: rápidos, independentes, repetíveis, autoverificáveis e oportunos.
 - I/O externo é substituído por classes fake nomeadas, nunca stubs inline.
-- Testes não dependem de rede, credenciais, relógio real, ordem, seed manual ou estado de outro teste.
+- Testes em memória não dependem de rede, credenciais, relógio real, ordem, seed manual ou estado de outro teste. Integração MySQL usa containers locais descartáveis preparados automaticamente; não usa banco externo nem o volume do Compose.
 - Toda execução é headless, não interativa e produz saída previsível.
 - Não reduza assertions nem desabilite testes para obter sucesso.
 
 ## Comando completo
 
 Após executar `./scripts/setup.sh`, valide o repositório com:
+
+Mantenha Docker com containers Linux em execução. A primeira execução precisa baixar `mysql:latest` e a imagem do resource reaper do Testcontainers; depois pode usar o cache local. O setup restaura os pacotes, mas não inicia banco nem altera volumes.
 
 ```bash
 ./scripts/check.sh
@@ -50,6 +52,17 @@ Use o servidor de testes do ASP.NET Core para integração. Cada teste cria e co
 
 Implementação: xUnit e `WebApplicationFactory<Program>` em ambiente `Testing`, sem seed automático. Os testes de regras usam repositories reais em memória; os de concorrência exercitam IDs atômicos, ata única, associação idempotente e snapshots. Datas são constantes e nenhuma chamada usa rede externa.
 
+`WorkshopApiFactory` força `InMemory`, independentemente das variáveis locais. `PersistenceConfigurationTests` verifica seleção consistente dos três repositories e rejeição de configuração inválida sem revelar credenciais.
+
+O projeto `Fast.Workshops.MySql.Tests` faz parte da solução e da validação completa. Testcontainers cria bancos isolados por classe, portas disponíveis e senha descartável, aplica o mesmo `schema.sql` do Compose e remove os containers ao terminar. Os casos controlam seus próprios registros e não dependem da ordem. Cobrem repositories reais, SQL parametrizado, precisão/fuso de datas, IDs concorrentes, ata única, associação idempotente, integridade referencial, snapshots, remoção, contratos HTTP, filtros, ausência de seed e persistência após reiniciar a API. Falhas de servidor e schema impedem startup. Docker ausente faz a suíte falhar; não há testes ignorados silenciosamente.
+
+Testes focados:
+
+```bash
+dotnet test backend/tests/Fast.Workshops.Api.Tests --no-restore
+dotnet test backend/tests/Fast.Workshops.MySql.Tests --no-restore
+```
+
 `SwaggerDocumentationTests` usa um host em `Development` para verificar a página Swagger UI, a geração do OpenAPI, os sete endpoints, respostas de erro `ProblemDetails` e descrições dos filtros. Esses testes inspecionam a documentação e não dependem dos dados do seed.
 
 ## Frontend
@@ -79,4 +92,4 @@ Quando houver mudança visual, confira os fluxos essenciais em desktop e em view
 
 ## Cobertura
 
-Não há meta numérica de cobertura nesta entrega. Priorize regras, contratos e regressões relevantes ao desafio.
+Não há meta numérica de cobertura nesta entrega. Priorize regras, contratos e regressões relevantes.
