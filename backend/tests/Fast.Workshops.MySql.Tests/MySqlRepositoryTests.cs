@@ -1,7 +1,10 @@
 using System.Globalization;
 using Fast.Workshops.Api.Models;
 using Fast.Workshops.Api.Repositories.MySql;
-using MySqlConnector;
+using Fast.Workshops.Api.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fast.Workshops.MySql.Tests;
 
@@ -11,7 +14,8 @@ public sealed class MySqlRepositoryTests(MySqlTestDatabase database) : IClassFix
     [Fact]
     public void RoundTripsWorkshopsAndCollaborators()
     {
-        using var connections = new MySqlDataSource(database.ConnectionString);
+        using var provider = CreateProvider();
+        var connections = provider.GetRequiredService<IDbContextFactory<WorkshopsDbContext>>();
         var workshops = new MySqlWorkshopRepository(connections);
         var collaborators = new MySqlCollaboratorRepository(connections);
         var instant = DateTimeOffset.Parse("2026-10-08T23:59:59.1234567-03:00", CultureInfo.InvariantCulture);
@@ -39,7 +43,8 @@ public sealed class MySqlRepositoryTests(MySqlTestDatabase database) : IClassFix
     [Fact]
     public void EnforcesAttendanceRelationships()
     {
-        using var connections = new MySqlDataSource(database.ConnectionString);
+        using var provider = CreateProvider();
+        var connections = provider.GetRequiredService<IDbContextFactory<WorkshopsDbContext>>();
         var records = new MySqlAttendanceRecordRepository(connections);
         var workshop = new MySqlWorkshopRepository(connections).Create("Relationships", DateTimeOffset.UnixEpoch, "Test");
         var collaborator = new MySqlCollaboratorRepository(connections).Create("Participant");
@@ -62,7 +67,8 @@ public sealed class MySqlRepositoryTests(MySqlTestDatabase database) : IClassFix
     [Fact]
     public async Task SerializesConcurrentWrites()
     {
-        using var connections = new MySqlDataSource(database.ConnectionString);
+        using var provider = CreateProvider();
+        var connections = provider.GetRequiredService<IDbContextFactory<WorkshopsDbContext>>();
         var records = new MySqlAttendanceRecordRepository(connections);
         var workshops = new MySqlWorkshopRepository(connections);
         var created = await Task.WhenAll(Enumerable.Range(0, 12).Select(index => Task.Run(() =>
@@ -74,6 +80,18 @@ public sealed class MySqlRepositoryTests(MySqlTestDatabase database) : IClassFix
         var collaborator = new MySqlCollaboratorRepository(connections).Create("Concurrent participant");
         await Task.WhenAll(Enumerable.Range(0, 12).Select(_ => Task.Run(() => records.AddCollaborator(attendance.Id, collaborator.Id))));
         Assert.Equal(new[] { collaborator.Id }, records.Find(attendance.Id)!.CollaboratorIds);
+    }
+
+    private ServiceProvider CreateProvider()
+    {
+        var services = new ServiceCollection();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Persistence:Provider"] = "MySql",
+            ["ConnectionStrings:Workshops"] = database.ConnectionString
+        }).Build();
+        services.AddPersistence(configuration);
+        return services.BuildServiceProvider();
     }
 
     private static bool TryCreate(MySqlAttendanceRecordRepository records, int workshopId)

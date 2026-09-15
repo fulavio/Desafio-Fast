@@ -3,6 +3,7 @@ using Fast.Workshops.Api.Repositories.InMemory;
 using Fast.Workshops.Api.Repositories.MySql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fast.Workshops.Api.Tests;
 
@@ -41,6 +42,27 @@ public sealed class PersistenceConfigurationTests
             new ServiceCollection().AddPersistence(Settings(provider, connection)));
         Assert.Contains(expected, exception.Message);
         Assert.DoesNotContain("secret-value", exception.Message);
+    }
+
+    /// <summary>Creates independent EF contexts without contacting MySQL or enabling sensitive logging.</summary>
+    [Fact]
+    public void CreatesIndependentContextsOnlyForMySql()
+    {
+        var services = new ServiceCollection();
+        services.AddPersistence(Settings("MySql", "Server=localhost;Database=workshops"));
+        using var container = services.BuildServiceProvider();
+        var factory = container.GetRequiredService<IDbContextFactory<WorkshopsDbContext>>();
+        using var first = factory.CreateDbContext();
+        using var second = factory.CreateDbContext();
+        Assert.NotSame(first, second);
+        Assert.Equal("MySql.EntityFrameworkCore", first.Database.ProviderName);
+        Assert.Empty(first.ChangeTracker.Entries());
+        var options = container.GetRequiredService<DbContextOptions<WorkshopsDbContext>>();
+        Assert.False(options.FindExtension<Microsoft.EntityFrameworkCore.Infrastructure.CoreOptionsExtension>()!.IsSensitiveDataLoggingEnabled);
+        var memoryServices = new ServiceCollection();
+        memoryServices.AddPersistence(Settings("InMemory", null));
+        using var memoryContainer = memoryServices.BuildServiceProvider();
+        Assert.Null(memoryContainer.GetService<IDbContextFactory<WorkshopsDbContext>>());
     }
 
     private static IConfiguration Settings(string? provider, string? connection) =>

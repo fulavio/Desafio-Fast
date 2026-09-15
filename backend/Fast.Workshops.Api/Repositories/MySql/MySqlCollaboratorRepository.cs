@@ -1,19 +1,18 @@
 using Fast.Workshops.Api.Models;
-using MySqlConnector;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fast.Workshops.Api.Repositories.MySql;
 
-public sealed class MySqlCollaboratorRepository(MySqlDataSource connections) : ICollaboratorRepository
+public sealed class MySqlCollaboratorRepository(IDbContextFactory<WorkshopsDbContext> contexts) : ICollaboratorRepository
 {
     /// <inheritdoc />
     public Collaborator Create(string name)
     {
-        using var connection = connections.OpenConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO collaborators (name) VALUES (@name)";
-        command.Parameters.AddWithValue("@name", name);
-        command.ExecuteNonQuery();
-        return new(checked((int)command.LastInsertedId), name);
+        using var context = contexts.CreateDbContext();
+        var collaborator = new CollaboratorRow { Name = name };
+        context.Add(collaborator);
+        context.SaveChanges();
+        return new(collaborator.Id, collaborator.Name);
     }
 
     /// <inheritdoc />
@@ -24,13 +23,9 @@ public sealed class MySqlCollaboratorRepository(MySqlDataSource connections) : I
 
     private IReadOnlyList<Collaborator> ReadCollaborators(int? id)
     {
-        using var connection = connections.OpenConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT id, name FROM collaborators" + (id.HasValue ? " WHERE id = @id" : "");
-        if (id.HasValue) command.Parameters.AddWithValue("@id", id.Value);
-        using var reader = command.ExecuteReader();
-        var collaborators = new List<Collaborator>();
-        while (reader.Read()) collaborators.Add(new(reader.GetInt32(0), reader.GetString(1)));
-        return collaborators;
+        using var context = contexts.CreateDbContext();
+        var collaborators = context.Set<CollaboratorRow>().AsNoTracking();
+        if (id.HasValue) collaborators = collaborators.Where(row => row.Id == id.Value);
+        return collaborators.AsEnumerable().Select(row => new Collaborator(row.Id, row.Name)).ToArray();
     }
 }

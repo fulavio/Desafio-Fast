@@ -1,6 +1,7 @@
 using Fast.Workshops.Api.Repositories.InMemory;
 using Fast.Workshops.Api.Repositories.MySql;
-using MySqlConnector;
+using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 
 namespace Fast.Workshops.Api.Repositories;
 
@@ -37,7 +38,7 @@ public static class PersistenceRegistration
         {
             throw new InvalidOperationException("ConnectionStrings:Workshops recebida inválida (valor omitido); esperada conexão MySQL com Database definido.");
         }
-        services.AddSingleton(_ => new MySqlDataSource(connectionString));
+        services.AddDbContextFactory<WorkshopsDbContext>(options => options.UseMySQL(connectionString));
         services.AddScoped<IWorkshopRepository, MySqlWorkshopRepository>();
         services.AddScoped<ICollaboratorRepository, MySqlCollaboratorRepository>();
         services.AddScoped<IAttendanceRecordRepository, MySqlAttendanceRecordRepository>();
@@ -46,9 +47,10 @@ public static class PersistenceRegistration
     /// <summary>Fails startup if MySQL or its schema is unavailable; never falls back to memory.</summary>
     public static void VerifyMySql(IServiceProvider services)
     {
-        using var connection = services.GetRequiredService<MySqlDataSource>().OpenConnection();
-        using var command = connection.CreateCommand();
-        command.CommandText = "SELECT w.id, w.name, w.held_at, w.description, c.id, c.name, a.id, a.workshop_id, p.attendance_id, p.collaborator_id FROM workshops w, collaborators c, attendance_records a, attendance_participants p LIMIT 0";
-        command.ExecuteNonQuery();
+        using var context = services.GetRequiredService<IDbContextFactory<WorkshopsDbContext>>().CreateDbContext();
+        _ = context.Set<WorkshopRow>().AsNoTracking().Take(1).ToArray();
+        _ = context.Set<CollaboratorRow>().AsNoTracking().Take(1).ToArray();
+        _ = context.Set<AttendanceRow>().AsNoTracking().Take(1).ToArray();
+        _ = context.Set<ParticipantRow>().AsNoTracking().Take(1).ToArray();
     }
 }

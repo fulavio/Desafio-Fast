@@ -54,7 +54,7 @@ Implementação: xUnit e `WebApplicationFactory<Program>` em ambiente `Testing`,
 
 `WorkshopApiFactory` força `InMemory`, independentemente das variáveis locais. `PersistenceConfigurationTests` verifica seleção consistente dos três repositories e rejeição de configuração inválida sem revelar credenciais.
 
-O projeto `Fast.Workshops.MySql.Tests` faz parte da solução e da validação completa. Testcontainers cria bancos isolados por classe, portas disponíveis e senha descartável, aplica o mesmo `schema.sql` do Compose e remove os containers ao terminar. Os casos controlam seus próprios registros e não dependem da ordem. Cobrem repositories reais, SQL parametrizado, precisão/fuso de datas, IDs concorrentes, ata única, associação idempotente, integridade referencial, snapshots, remoção, contratos HTTP, filtros, ausência de seed e persistência após reiniciar a API. Falhas de servidor e schema impedem startup. Docker ausente faz a suíte falhar; não há testes ignorados silenciosamente.
+O projeto `Fast.Workshops.MySql.Tests` faz parte da solução e da validação completa. Testcontainers cria bancos isolados por classe, portas disponíveis e senha descartável, aplica o mesmo `schema.sql` do Compose e remove os containers ao terminar. Os casos controlam seus próprios registros e não dependem da ordem. Cobrem repositories reais com EF Core e contextos independentes por operação, SQL gerado com parâmetros, precisão/fuso de datas, IDs concorrentes, ata única, associação idempotente, integridade referencial, snapshots, remoção, contratos HTTP, filtros, ausência de seed e persistência após reiniciar a API. Falhas de servidor e schema impedem startup. Docker ausente faz a suíte falhar; não há testes ignorados silenciosamente.
 
 Testes focados:
 

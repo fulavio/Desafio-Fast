@@ -68,7 +68,7 @@ Na interface, filtre atas por workshop, data e colaborador e abra os detalhes de
 
 ## MySQL com Docker Compose
 
-1. Copie `.env.example` para `.env` e substitua as duas senhas. O arquivo `.env` é ignorado pelo Git.
+1. Copie `.env.example` para `.env` e substitua as duas senhas.
 2. Execute `docker compose up -d --wait`. O serviço usa `mysql:latest`, porta local 3306 (alterável por `MYSQL_PORT`) e volume nomeado `mysql_data` montado em `/var/lib/mysql`.
 3. Configure a conexão da API com a mesma senha de `MYSQL_PASSWORD`:
 
@@ -90,7 +90,7 @@ O script `Repositories/MySql/schema.sql` cria as tabelas automaticamente somente
 
 `docker compose down` preserva os dados. `docker compose down -v` apaga o volume e os dados. Alterar senhas no `.env` não modifica usuários já criados no volume. A tag `latest` acompanha novas versões; faça backup e confira a compatibilidade do volume antes de atualizar a imagem.
 
-Referências: [imagem oficial MySQL](https://hub.docker.com/_/mysql), [MySqlConnector](https://mysqlconnector.net/).
+Referências: [imagem oficial MySQL](https://hub.docker.com/_/mysql), [provider MySQL para EF Core](https://www.nuget.org/packages/MySql.EntityFrameworkCore/10.0.9).
 
 ## Validação
 

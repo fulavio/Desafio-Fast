@@ -108,15 +108,15 @@ Implemente-as em `Repositories/InMemory`. Compartilhe o estado por `InMemoryData
 
 O armazenamento usa um lock por instância de `InMemoryDatabase`. IDs, criação exclusiva de atas e alterações de participantes são atômicos. Models de workshop e colaborador são imutáveis; atas retornadas pelos repositories são snapshots independentes.
 
-Não use repositório genérico nem Unit of Work próprio. As mesmas interfaces têm implementações MySQL em `Repositories/MySql`, com MySqlConnector e SQL parametrizado. Cada operação abre e descarta uma conexão do pool; `MySqlDataSource` é singleton no container e repositories continuam scoped.
+Não use repositório genérico nem Unit of Work próprio. As mesmas interfaces têm implementações MySQL em `Repositories/MySql`, com Entity Framework Core 10 e o provider oficial `MySql.EntityFrameworkCore`. `WorkshopsDbContext` mapeia o schema existente via Fluent API. `IDbContextFactory<WorkshopsDbContext>` é registrado pelo container; cada operação cria e descarta seu próprio contexto, permitindo chamadas concorrentes sem compartilhar o change tracker. Repositories continuam scoped. Consultas usam LINQ com `AsNoTracking`, gravações usam `SaveChanges` e remoções usam `ExecuteDelete`.
 
-`schema.sql` usa InnoDB, IDs AUTO_INCREMENT, chave única por workshop e chave primária composta para participantes. Foreign keys impedem associações órfãs. Violações de unicidade e referência são convertidas nas exceções existentes. A leitura de atas e participantes usa um único SELECT com LEFT JOIN para produzir snapshots coerentes. Filtros, ordenação e projeção permanecem nos services.
+`schema.sql` usa InnoDB, IDs AUTO_INCREMENT, chave única por workshop e chave primária composta para participantes. Foreign keys impedem associações órfãs. Violações de unicidade e referência em `DbUpdateException` são convertidas nas exceções existentes pelo código MySQL interno. A leitura de atas e participantes usa um único SELECT com LEFT JOIN para produzir snapshots coerentes. As entidades internas de persistência ficam junto ao contexto e são convertidas em models, preservando seus IDs positivos, imutabilidade e snapshots. Filtros, ordenação e projeção permanecem nos services.
 
 `held_at` guarda o formato ISO 8601 round-trip em VARCHAR(33), preservando o offset e sete casas decimais; Textos usam utf8mb4 e LONGTEXT, sem introduzir um limite curto nos contratos HTTP.
 
 `PersistenceRegistration` seleciona os três repositories na inicialização por `Persistence:Provider` (`InMemory` por padrão ou `MySql`). Configuração desconhecida e conexão vazia/inválida falham imediatamente. MySQL exige `ConnectionStrings:Workshops` e verifica acesso às tabelas antes de iniciar HTTP. Não há fallback ou migração de dados entre modos; reinicie para trocar. Credenciais ficam em User Secrets no desenvolvimento ou na configuração do ambiente.
 
-O Compose usa `mysql:latest` com volume nomeado em `/var/lib/mysql`, bind da porta somente em loopback e schema inicial em `/docker-entrypoint-initdb.d`. Não aplica alterações de schema em volumes existentes. O banco externo deve receber o mesmo schema previamente; futuras evoluções exigem migrações explícitas.
+O Compose usa `mysql:latest` com volume nomeado em `/var/lib/mysql`, bind da porta somente em loopback e schema inicial em `/docker-entrypoint-initdb.d`. O EF Core não chama `EnsureCreated` nem `Migrate`; não aplica alterações de schema em volumes existentes. O banco externo deve receber o mesmo schema previamente; futuras evoluções exigem migrações explícitas.
 
 ### Configuração
 
