@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Include="../../../scripts/seed-mysql.sql" Link="seed-mysql.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../Fast.Workshops.Api/Repositories/MySql/schema.sql" Link="schema.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

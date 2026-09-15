@@ -44,6 +44,19 @@ O comando pode ser executado novamente sem exigir limpeza manual.
 
 ## Execução
 
+Após o setup, inicie backend e frontend juntos em um terminal:
+
+| Modo       | PowerShell (Windows)         | Bash                             |
+| ---------- | ---------------------------- | -------------------------------- |
+| Em memória | `.\scripts\run-inmemory.ps1` | `bash ./scripts/run-inmemory.sh` |
+| MySQL      | `.\scripts\run-mysql.ps1`    | `bash ./scripts/run-mysql.sh`    |
+
+Para MySQL, prepare `.env` conforme `.env.example` e mantenha o Docker ativo. O script inicia o serviço `mysql` e aguarda seu healthcheck. Ele usa a configuração resolvida pelo Compose para passar banco, usuário, senha e porta à API por variável de ambiente, sem gravar credenciais ou exigir User Secrets. Variáveis do ambiente têm a precedência normal do Compose sobre `.env`.
+
+Os scripts usam `Development`, API na porta 5000 e frontend na 4200. Execute apenas um modo por vez e mantenha essas portas livres. Os logs aparecem no terminal; Ctrl+C encerra backend e frontend. Se um dos processos falhar, o outro também é encerrado. O MySQL continua ativo e o volume é preservado; para pará-lo, use `docker compose stop mysql`. Execute novamente o setup quando as dependências mudarem.
+
+### Execução separada
+
 Backend:
 
 ```bash
@@ -91,6 +104,24 @@ O script `Repositories/MySql/schema.sql` cria as tabelas automaticamente somente
 `docker compose down` preserva os dados. `docker compose down -v` apaga o volume e os dados. Alterar senhas no `.env` não modifica usuários já criados no volume. A tag `latest` acompanha novas versões; faça backup e confira a compatibilidade do volume antes de atualizar a imagem.
 
 Referências: [imagem oficial MySQL](https://hub.docker.com/_/mysql), [provider MySQL para EF Core](https://www.nuget.org/packages/MySql.EntityFrameworkCore/10.0.9).
+
+## Semear o MySQL
+
+Com Docker ativo e `.env` configurado, execute:
+
+```powershell
+.\scripts\seed-mysql.ps1
+```
+
+Ou, em Bash:
+
+```bash
+bash ./scripts/seed-mysql.sh
+```
+
+O script inicia o MySQL do Compose, aguarda o healthcheck e insere três workshops, quatro colaboradores, três atas e oito participações, com os mesmos exemplos do modo em memória. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
+
+Pode ser executado novamente, sequencialmente, sem duplicar os exemplos. Reutiliza colaboradores pelo nome e workshops pelo nome e timestamp exato; se houver vários correspondentes, usa o menor ID. Preserva descrições editadas e outros registros. Participações de exemplo removidas são recriadas ao executar o seed novamente. O seed é explícito e não é executado por `run-mysql` nem pelo startup da API. Os inserts são feitos em uma transação; o script não altera o schema nem apaga dados.
 
 ## Validação
 

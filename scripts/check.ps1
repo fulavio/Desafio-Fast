@@ -6,6 +6,9 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $backendSolution = Join-Path $projectRoot 'backend/Fast.Workshops.sln'
 $frontendRoot = Join-Path $projectRoot 'frontend'
 
+& node --test (Join-Path $PSScriptRoot 'run-project.test.mjs') (Join-Path $PSScriptRoot 'seed-mysql.test.mjs')
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 & dotnet format $backendSolution --verify-no-changes --no-restore
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

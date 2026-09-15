@@ -127,9 +127,13 @@ O Compose usa `mysql:latest` com volume nomeado em `/var/lib/mysql`, bind da por
 - configure logs JSON com o logger do ASP.NET Core;
 - disponibilize Swagger UI em `/swagger` e o documento OpenAPI em `/swagger/v1/swagger.json` no ambiente `Development`; os metadados vêm dos controllers via Swashbuckle e incluem descrições, parâmetros, DTOs e respostas HTTP.
 
+### Scripts de desenvolvimento
+
+`run-inmemory` e `run-mysql` têm entradas `.ps1` e `.sh`. Ambas delegam a `scripts/run-project.mjs`, executado pelo Node.js já exigido pelo frontend. O launcher supervisiona API e Angular e encerra os processos que iniciou ao receber interrupção ou falha. No modo MySQL, consulta `docker compose config --format json`, monta a conexão para a porta publicada e aguarda o healthcheck com `up -d --wait`. A conexão é passada somente ao processo da API. O container e o volume permanecem disponíveis após encerrar a aplicação.
+
 ### Seed
 
-O seed executa uma vez por inicialização somente em `Development` com `InMemory` e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. MySQL começa vazio e preserva os cadastros existentes, sem seed automático. Testes controlam o próprio estado e não dependem desse seed.
+O seed executa uma vez por inicialização somente em `Development` com `InMemory` e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. MySQL começa vazio e preserva os cadastros existentes, sem seed automático. O comando explícito `scripts/seed-mysql.ps1` (ou `.sh`) aplica `scripts/seed-mysql.sql` no serviço local do Compose, em transação. Ele inclui os mesmos exemplos da memória, reutiliza nomes de colaboradores e nome/timestamp de workshops e completa atas e participações ausentes. Não altera o seed automático da API. Testes controlam o próprio estado e não dependem de seed manual.
 
 ## Frontend Angular
 

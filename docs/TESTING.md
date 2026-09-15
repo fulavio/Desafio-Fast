@@ -29,7 +29,7 @@ ou
 
 ## Backend
 
-Os scripts executam, em sequência: `dotnet format --verify-no-changes`, build e testes .NET, Prettier, ESLint, build de produção Angular e testes Angular sem watch. A primeira falha interrompe a execução com código diferente de zero.
+Os scripts executam, em sequência: testes do launcher com `node --test scripts/run-project.test.mjs`, `dotnet format --verify-no-changes`, build e testes .NET, Prettier, ESLint, build de produção Angular e testes Angular sem watch. A primeira falha interrompe a execução com código diferente de zero.
 
 No Windows, use PowerShell ou Git Bash com as ferramentas Windows no PATH. WSL é um ambiente separado e precisa de .NET/Node próprios. Feche os servidores antes de executar o setup ou os checks, pois executáveis podem estar bloqueados no Windows.
 
@@ -93,3 +93,9 @@ Quando houver mudança visual, confira os fluxos essenciais em desktop e em view
 ## Cobertura
 
 Não há meta numérica de cobertura nesta entrega. Priorize regras, contratos e regressões relevantes.
+
+## Scripts de execução
+
+Os testes do launcher usam processos e comandos fake nomeados, sem iniciar Docker ou servidores. Cobrem configuração MySQL e escape de senha, isolamento do modo em memória, falhas e encerramento dos processos ao receber Ctrl+C. Execute-os isoladamente com `node --test scripts/run-project.test.mjs`.
+
+`seed-mysql.test.mjs` verifica a chamada ao Compose e a propagação de falhas usando comandos fake, sem Docker. `MySqlSeedTests` executa o SQL real em container descartável e verifica quantidades, repetição sem duplicatas, IDs estáveis, Unicode, timestamps e preservação de registros e descrições editados. Ambas as suítes fazem parte de `check.sh` e `check.ps1`.
