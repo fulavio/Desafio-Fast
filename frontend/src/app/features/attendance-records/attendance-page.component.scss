@@ -1,0 +1,28 @@
+.participant-preview {
+  max-height: 58px;
+  overflow: hidden;
+}
+
+.participant-preview li {
+  height: 26px;
+  line-height: 16px;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.list-progress {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.list-progress p {
+  color: #61726a;
+  font-size: 13px;
+}
+
+.list-progress button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}

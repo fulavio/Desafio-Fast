@@ -33,7 +33,7 @@ describe("Attendance page", () => {
   it("renders loading, participants, calendar dates and real detail links", async () => {
     const harness = await RouterTestingHarness.create("/atas");
     expect(harness.routeNativeElement?.textContent).toContain("Carregando");
-    server.replyAttendance();
+    server.replyAttendancePage();
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.querySelectorAll("article").length).toBe(
       2,
@@ -45,11 +45,16 @@ describe("Attendance page", () => {
     ).toBe("/workshops/1");
   });
 
-  it("restores query filters and only filters collaborator names in the client", async () => {
+  it("restores query filters and sends collaborator names to the server before pagination", async () => {
     const harness = await RouterTestingHarness.create(
       "/atas?workshopNome=Code&data=2026-07-09&colaborador=ana",
     );
-    server.replyAttendance(sampleAttendance, "Code", "2026-07-09");
+    server.replyAttendancePage(
+      [sampleAttendance[0]],
+      "Code",
+      "2026-07-09",
+      "ana",
+    );
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.querySelectorAll("article").length).toBe(
       1,
@@ -63,7 +68,7 @@ describe("Attendance page", () => {
 
   it("submits and clears filters through the visible form", async () => {
     const harness = await RouterTestingHarness.create("/atas");
-    server.replyAttendance();
+    server.replyAttendancePage();
     await harness.fixture.whenStable();
     const input =
       harness.routeNativeElement!.querySelector<HTMLInputElement>(
@@ -75,7 +80,7 @@ describe("Attendance page", () => {
       .routeNativeElement!.querySelector("form")!
       .dispatchEvent(new Event("submit"));
     await harness.fixture.whenStable();
-    server.replyAttendance([], "Code");
+    server.replyAttendancePage([], "Code");
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe("/atas?workshopNome=Code");
     expect(harness.routeNativeElement?.textContent).toContain(
@@ -85,7 +90,7 @@ describe("Attendance page", () => {
       .routeNativeElement!.querySelector<HTMLButtonElement>(".text-button")!
       .click();
     await harness.fixture.whenStable();
-    server.replyAttendance();
+    server.replyAttendancePage();
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe("/atas");
     expect(harness.routeNativeElement?.querySelectorAll("article").length).toBe(
@@ -95,7 +100,7 @@ describe("Attendance page", () => {
 
   it("retries an error without needing to change the URL", async () => {
     const harness = await RouterTestingHarness.create("/atas");
-    server.fail("/atas");
+    server.fail("/atas/pagina");
     await harness.fixture.whenStable();
     expect(
       harness.routeNativeElement?.querySelector('[role="alert"]'),
@@ -107,7 +112,7 @@ describe("Attendance page", () => {
       .click();
     harness.detectChanges();
     expect(harness.routeNativeElement?.textContent).toContain("Carregando");
-    server.replyAttendance();
+    server.replyAttendancePage();
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.querySelectorAll("article").length).toBe(
       2,
@@ -120,8 +125,8 @@ describe("Attendance page", () => {
       "/atas?workshopNome=Angular",
       AttendancePageComponent,
     );
-    server.expectCancelledAttendance();
-    server.replyAttendance([sampleAttendance[1]], "Angular");
+    server.expectCancelledAttendance("/atas/pagina?pagina=1&tamanhoPagina=6");
+    server.replyAttendancePage([sampleAttendance[1]], "Angular");
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain("Angular");
     expect(harness.routeNativeElement?.textContent).not.toContain("Clean Code");
@@ -131,7 +136,7 @@ describe("Attendance page", () => {
     const harness = await RouterTestingHarness.create(
       "/atas?colaborador=Nobody",
     );
-    server.replyAttendance();
+    server.replyAttendancePage([], "", "", "Nobody");
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain(
       "Nenhuma ata encontrada",
@@ -145,7 +150,7 @@ describe("Attendance page", () => {
     "redirects %s to attendance",
     async (path: string) => {
       const harness = await RouterTestingHarness.create(path);
-      server.replyAttendance([]);
+      server.replyAttendancePage([]);
       await harness.fixture.whenStable();
       expect(TestBed.inject(Router).url).toBe("/atas");
     },

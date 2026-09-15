@@ -32,6 +32,34 @@ export const sampleAttendance: readonly AttendanceRecord[] = [
 export class FakeWorkshopServer {
   constructor(private readonly http: HttpTestingController) {}
 
+  /** Supplies a page after checking all remote filters; e.g. page 2 of 20 records. */
+  replyAttendancePage(
+    records: readonly AttendanceRecord[] = sampleAttendance,
+    name = "",
+    date = "",
+    collaborator = "",
+    page = 1,
+    total = records.length,
+  ): void {
+    const request = this.http.expectOne(
+      (request) => request.url === environment.apiUrl + "/atas/pagina",
+    );
+    expect(request.request.method).toBe("GET");
+    expect(request.request.params.get("workshopNome") ?? "").toBe(name);
+    expect(request.request.params.get("data") ?? "").toBe(date);
+    expect(request.request.params.get("colaborador") ?? "").toBe(collaborator);
+    expect(request.request.params.get("pagina")).toBe(String(page));
+    expect(request.request.params.get("tamanhoPagina")).toBe("6");
+    request.flush({
+      items: records.map((record) => ({
+        ...record,
+        collaborators: record.collaborators.slice(0, 7),
+        participantCount: record.collaborators.length,
+      })),
+      total,
+    });
+  }
+
   /** Answers the attendance request and checks remote filters; e.g. code on July 9. */
   replyAttendance(
     records: readonly AttendanceRecord[] = sampleAttendance,
@@ -56,13 +84,13 @@ export class FakeWorkshopServer {
   /** Produces a controlled HTTP error; e.g. 503 followed by a successful retry. */
   fail(path: string, status = 503): void {
     this.http
-      .expectOne(environment.apiUrl + path)
+      .expectOne((request) => request.url === environment.apiUrl + path)
       .flush({ title: "Unavailable" }, { status, statusText: "Failure" });
   }
 
   /** Verifies cancellation of stale filters; e.g. an earlier list cannot overwrite the latest search. */
-  expectCancelledAttendance(): void {
-    const request = this.http.expectOne(environment.apiUrl + "/atas");
+  expectCancelledAttendance(path = "/atas"): void {
+    const request = this.http.expectOne(environment.apiUrl + path);
     expect(request.cancelled).toBe(true);
   }
 

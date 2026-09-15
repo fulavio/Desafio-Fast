@@ -11,6 +11,7 @@ public sealed class SwaggerDocumentationTests
     [InlineData("/api/colaboradores", "get", "200")]
     [InlineData("/api/atas", "post", "201,400,404,409")]
     [InlineData("/api/atas", "get", "200,400")]
+    [InlineData("/api/atas/pagina", "get", "200,400")]
     [InlineData("/api/atas/{ataId}/colaboradores/{colaboradorId}", "put", "204,400,404")]
     [InlineData("/api/atas/{ataId}/colaboradores/{colaboradorId}", "delete", "204,400,404")]
     public async Task OpenApiDescribesEndpointResponses(string path, string method, string statuses)

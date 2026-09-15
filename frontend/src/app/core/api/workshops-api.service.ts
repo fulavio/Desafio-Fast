@@ -2,7 +2,11 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { map, Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
-import { AttendanceFilters, AttendanceRecord } from "../models/workshop.models";
+import {
+  AttendanceFilters,
+  AttendancePage,
+  AttendanceRecord,
+} from "../models/workshop.models";
 
 @Injectable({ providedIn: "root" })
 export class WorkshopsApiService {
@@ -24,6 +28,22 @@ export class WorkshopsApiService {
       environment.apiUrl + "/atas",
       { params },
     );
+  }
+
+  /** Loads six summaries after all filters; e.g. page 2 contains the next matching workshops. */
+  attendancePage(
+    filters: AttendanceFilters,
+    page: number,
+  ): Observable<AttendancePage> {
+    let params = new HttpParams().set("pagina", page).set("tamanhoPagina", 6);
+    if (filters.workshopNome)
+      params = params.set("workshopNome", filters.workshopNome);
+    if (filters.data) params = params.set("data", filters.data);
+    if (filters.colaborador)
+      params = params.set("colaborador", filters.colaborador);
+    return this.http.get<AttendancePage>(environment.apiUrl + "/atas/pagina", {
+      params,
+    });
   }
 
   /** Finds a workshop's attendance using the existing list; e.g. workshop 1 may have attendance 8. */

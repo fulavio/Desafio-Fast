@@ -33,7 +33,24 @@ public sealed class AttendanceRecordService(IAttendanceRecordRepository attendan
             .Where(record => record.Workshop.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
             .Where(record => date is null || DateOnly.FromDateTime(record.Workshop.HeldAt.Date) == date)
             .OrderByDescending(record => record.Workshop.HeldAt)
-            .ThenBy(record => record.Workshop.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+            .ThenBy(record => record.Workshop.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(record => record.Id).ToArray();
+    }
+
+    /// <summary>Pages filtered summaries; e.g. page 1 returns six workshops with up to seven names each.</summary>
+    public AttendancePageResponse ListPage(string? workshopName, string? calendarDate, string? collaboratorName, int page, int pageSize)
+    {
+        if (page < 1 || pageSize is < 1 or > 50)
+            throw new InputException($"pagina recebida '{page}', tamanhoPagina recebido '{pageSize}'; esperado pagina >= 1 e tamanhoPagina entre 1 e 50.");
+        var name = collaboratorName?.Trim() ?? "";
+        var matching = List(workshopName, calendarDate)
+            .Where(record => name.Length == 0 || record.Collaborators.Any(person => person.Name.Contains(name, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+        var offset = (long)(page - 1) * pageSize;
+        var items = offset >= matching.Length ? [] : matching.Skip((int)offset).Take(pageSize)
+            .Select(record => new AttendanceSummaryResponse(record.Id, record.Workshop,
+                record.Collaborators.Take(7).ToArray(), record.Collaborators.Count)).ToArray();
+        return new(items, matching.Length);
     }
 
     /// <summary>Adds an existing participant idempotently; e.g. record 1 and person 2.</summary>

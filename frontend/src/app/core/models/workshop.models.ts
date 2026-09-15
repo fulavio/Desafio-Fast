@@ -18,3 +18,12 @@ export interface AttendanceFilters {
   readonly data: string;
   readonly colaborador: string;
 }
+
+export interface AttendanceSummary extends AttendanceRecord {
+  readonly participantCount: number;
+}
+
+export interface AttendancePage {
+  readonly items: readonly AttendanceSummary[];
+  readonly total: number;
+}

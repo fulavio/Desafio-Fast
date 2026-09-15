@@ -100,6 +100,38 @@ Data inválida retorna `400 Bad Request`. Ausência de resultados retorna `200 O
 
 A página de detalhes consulta este endpoint sem filtros e localiza a ata por `workshop.id`. Sem uma ata correspondente, exibe “Ata não encontrada”. A remoção de presença usa o `id` da ata no endpoint `DELETE`, preservando o cadastro do colaborador.
 
+## `GET /api/atas/pagina`
+
+Consulta paginada usada pela listagem de workshops; `GET /api/atas` continua retornando atas completas para a tela de detalhes.
+
+- `workshopNome` e `data`: mesmos filtros de `GET /api/atas`.
+- `colaborador`: parte do nome de qualquer participante, sem diferenciar maiúsculas e minúsculas, após trim. Pesquisa todos os participantes, incluindo os que não aparecem na prévia.
+- `pagina`: inteiro a partir de 1; padrão 1.
+- `tamanhoPagina`: inteiro de 1 a 50; padrão 6.
+
+Os filtros usam `AND` e são aplicados antes da paginação. Ordena por data decrescente, nome do workshop e ID da ata como desempate. Resposta `200 OK`:
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "workshop": {
+        "id": 1,
+        "name": "Clean Code",
+        "heldAt": "2026-07-09T16:00:00-03:00",
+        "description": "Práticas para código legível."
+      },
+      "collaborators": [{ "id": 1, "name": "Ana Souza" }],
+      "participantCount": 1
+    }
+  ],
+  "total": 1
+}
+```
+
+`collaborators` inclui no máximo os sete primeiros nomes em ordem alfabética; `participantCount` inclui todas as presenças. `total` é o número de atas após os filtros, antes da paginação. Uma página além do fim retorna `items: []` e mantém `total`; nenhum resultado retorna `items: []` e `total: 0`. Parâmetros inválidos retornam `400` com `ProblemDetails`. Cada página consulta o estado atual; alterações concorrentes podem mudar os limites entre páginas.
+
 ## Validação
 
 - `name`: obrigatório e não pode conter apenas espaços;

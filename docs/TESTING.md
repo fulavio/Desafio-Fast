@@ -63,7 +63,7 @@ dotnet test backend/tests/Fast.Workshops.Api.Tests --no-restore
 dotnet test backend/tests/Fast.Workshops.MySql.Tests --no-restore
 ```
 
-`SwaggerDocumentationTests` usa um host em `Development` para verificar a página Swagger UI, a geração do OpenAPI, os sete endpoints, respostas de erro `ProblemDetails` e descrições dos filtros. Esses testes inspecionam a documentação e não dependem dos dados do seed.
+`SwaggerDocumentationTests` usa um host em `Development` para verificar a página Swagger UI, a geração do OpenAPI, os endpoints, respostas de erro `ProblemDetails` e descrições dos filtros. Esses testes inspecionam a documentação e não dependem dos dados do seed. `AttendancePaginationTests` verifica limites e contrato HTTP da paginação, desempate estável, última página, página além do fim, filtros anteriores à paginação e participantes fora da prévia de sete nomes.
 
 ## Frontend
 
@@ -85,6 +85,8 @@ Cubra:
 Use as ferramentas oficiais do Angular. Simule somente a fronteira HTTP com classes fake nomeadas.
 
 Implementação: `ng test` com o builder oficial `@angular/build:unit-test`, Vitest e jsdom. `FakeWorkshopServer` encapsula `HttpTestingController` e verifica parâmetros; componentes e roteador são reais (`RouterTestingHarness`). A suíte cobre retry, cancelamento de buscas, preservação dos filtros, links sem parâmetros vazios, estados e foco do atalho de conteúdo. Os detalhes são testados usando exclusivamente GET /api/atas, incluindo ausência da ata e seleção pelo ID do workshop. Os testes de remoção verificam o ID da ata, bloqueio de duplicidade, sucesso, último participante e falha com nova tentativa. Não exige Chrome instalado.
+
+`attendance-pagination.spec.ts` cobre rolagem automática, botão alternativo (inclusive sem `IntersectionObserver`), buscas simultâneas, fim da lista, retry e troca de filtros. Confere a prévia de sete nomes e os detalhes completos. `FakeIntersectionObserver` simula a visibilidade sem relógio real.
 
 ## Verificações manuais
 

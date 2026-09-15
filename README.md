@@ -77,7 +77,9 @@ O frontend usa Angular 21, componentes standalone e testes Vitest pelo builder o
 
 No modo `InMemory`, o perfil local ativa `Development` e cria três workshops, quatro colaboradores e três atas com participações variadas. Os dados são reiniciados quando o backend encerra. Fora de `Development`, a memória começa vazia. O modo `MySql` não executa esse seed.
 
-Na interface, filtre atas por workshop, data e colaborador e abra os detalhes de um encontro. Os filtros ficam na URL e são preservados ao voltar. Nos detalhes, use Remover ao lado do participante para removê-lo da ata; seu cadastro permanece intacto. Os detalhes vêm da consulta de atas. Cadastros e inclusão de participantes continuam disponíveis pelos endpoints documentados em `docs/API.md`.
+A lista carrega automaticamente seis workshops por vez conforme a rolagem. O botão “Carregar mais encontros” é uma alternativa para teclado ou navegadores sem suporte ao carregamento automático. Cada card mostra o total de participantes e até sete nomes em duas linhas; os detalhes exibem todos.
+
+Filtre por workshop, data e colaborador. Os filtros ficam na URL e são preservados ao voltar. Nos detalhes, Remover exclui apenas a presença, mantendo o cadastro. Cadastros e inclusão de participantes estão disponíveis pela [API](docs/API.md).
 
 ## MySQL com Docker Compose
 

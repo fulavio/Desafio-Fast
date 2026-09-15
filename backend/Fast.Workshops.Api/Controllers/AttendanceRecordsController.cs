@@ -32,6 +32,22 @@ public sealed class AttendanceRecordsController(AttendanceRecordService attendan
         [FromQuery(Name = "data"), SwaggerParameter("Data exata em yyyy-MM-dd, no fuso armazenado. Exemplo: 2026-10-08. Omita para não filtrar; valor vazio é inválido.")] string? calendarDate) =>
         Ok(attendanceRecords.List(workshopName, Request.Query.ContainsKey("data") ? calendarDate ?? "" : null));
 
+    /// <summary>GET /api/atas/pagina?pagina=1&amp;tamanhoPagina=6 loads workshop summaries.</summary>
+    [HttpGet("pagina")]
+    [SwaggerOperation(Summary = "Consultar página de atas", Description = "Filtra por workshop, data e colaborador antes de paginar. Retorna items e total, com até sete participantes e participantCount por ata. Ordena por data decrescente, nome e ID para desempate.")]
+    [ProducesResponseType(typeof(AttendancePageResponse), 200, "application/json")]
+    [ProducesResponseType(typeof(ProblemDetails), 400, "application/problem+json")]
+    public ActionResult<AttendancePageResponse> ListPage(
+        [FromQuery(Name = "workshopNome")] string? workshopName,
+        [FromQuery(Name = "data")] string? calendarDate,
+        [FromQuery(Name = "colaborador")] string? collaboratorName,
+        [FromQuery(Name = "pagina")] int page = 1,
+        [FromQuery(Name = "tamanhoPagina")] int pageSize = 6)
+    {
+        var date = Request.Query.ContainsKey("data") ? calendarDate ?? "" : null;
+        return Ok(attendanceRecords.ListPage(workshopName, date, collaboratorName, page, pageSize));
+    }
+
     /// <summary>PUT /api/atas/1/colaboradores/2 adds the participant idempotently.</summary>
     [HttpPut("{ataId}/colaboradores/{colaboradorId}")]
     [SwaggerOperation(Summary = "Adicionar participante à ata", Description = "IDs devem ser inteiros positivos e existentes. Não recebe corpo. Adicionar a mesma pessoa novamente mantém uma única participação e retorna 204.")]
