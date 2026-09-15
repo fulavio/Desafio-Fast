@@ -9,16 +9,27 @@ public sealed class MySqlSeedTests(MySqlTestDatabase database) : IClassFixture<M
     public async Task SeedsExamplesWithoutDuplicatesOrOverwritingRecords()
     {
         await ExecuteSql(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "seed-mysql.sql")));
-        await AssertCounts(3, 4, 3, 8);
+        await AssertCounts(20, 30, 20, 480);
+        await AssertQuarterlyCalendarAndParticipation();
         var originalId = await Scalar("SELECT id FROM workshops WHERE name = 'Clean Code'");
         await ExecuteSql("UPDATE workshops SET description = 'Edited locally' WHERE name = 'Clean Code'; INSERT INTO collaborators (name) VALUES ('Custom participant');");
         await ExecuteSql(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "seed-mysql.sql")));
-        await AssertCounts(3, 5, 3, 8);
+        await AssertCounts(20, 31, 20, 480);
         Assert.Equal(originalId, await Scalar("SELECT id FROM workshops WHERE name = 'Clean Code'"));
         Assert.Equal("Edited locally", await Scalar("SELECT description FROM workshops WHERE name = 'Clean Code'"));
         Assert.Equal("2026-07-09T16:00:00.0000000-03:00", await Scalar("SELECT held_at FROM workshops WHERE name = 'Clean Code'"));
         Assert.Equal("1", await Scalar("SELECT COUNT(*) FROM collaborators WHERE name = 'Custom participant'"));
         Assert.Equal("1", await Scalar("SELECT COUNT(*) FROM workshops WHERE name = 'Angular na prática'"));
+    }
+
+    private async Task AssertQuarterlyCalendarAndParticipation()
+    {
+        Assert.Equal("2022", await Scalar("SELECT MIN(LEFT(held_at, 4)) FROM workshops"));
+        Assert.Equal("2026", await Scalar("SELECT MAX(LEFT(held_at, 4)) FROM workshops"));
+        Assert.Equal("20", await Scalar("SELECT COUNT(DISTINCT CONCAT(LEFT(held_at, 4), '-', QUARTER(LEFT(held_at, 10)))) FROM workshops"));
+        Assert.Equal("20", await Scalar("SELECT COUNT(*) FROM workshops WHERE DAYOFWEEK(LEFT(held_at, 10)) = 5 AND DAYOFMONTH(LEFT(held_at, 10)) BETWEEN 8 AND 14 AND MONTH(LEFT(held_at, 10)) IN (1, 4, 7, 10) AND SUBSTRING(held_at, 11) = 'T16:00:00.0000000-03:00'"));
+        Assert.Equal("20", await Scalar("SELECT COUNT(*) FROM (SELECT attendance_id FROM attendance_participants GROUP BY attendance_id HAVING COUNT(*) = 24) AS full_records"));
+        Assert.Equal("30", await Scalar("SELECT COUNT(*) FROM (SELECT collaborator_id FROM attendance_participants GROUP BY collaborator_id HAVING COUNT(*) = 16) AS active_collaborators"));
     }
 
     private async Task AssertCounts(int workshops, int collaborators, int records, int participants)

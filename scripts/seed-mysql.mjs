@@ -20,7 +20,7 @@ const seedArguments = [
 
 /** Seeds the local Compose database explicitly; e.g. node scripts/seed-mysql.mjs.
  * @param {typeof spawnSync} execute
- * @returns {void}
+ * @returns {string} Summary of the examples ensured by the seed.
  */
 export function seedMySql(execute = spawnSync) {
   prepareEnvironment("MySql", execute);
@@ -33,14 +33,12 @@ export function seedMySql(execute = spawnSync) {
     throw new Error(
       "Seed MySQL falhou; esperado schema inicializado e conexao disponivel.",
     );
+  return "Seed MySQL concluido: 20 workshops trimestrais (2022–2026), 30 colaboradores, 20 atas e 480 participações de exemplo disponíveis. Registros anteriores foram preservados.";
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   try {
-    seedMySql();
-    console.log(
-      "Seed MySQL concluido: 3 workshops, 4 colaboradores e 3 atas de exemplo disponíveis.",
-    );
+    console.log(seedMySql());
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;

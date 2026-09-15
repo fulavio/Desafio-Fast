@@ -133,7 +133,7 @@ O Compose usa `mysql:latest` com volume nomeado em `/var/lib/mysql`, bind da por
 
 ### Seed
 
-O seed executa uma vez por inicialização somente em `Development` com `InMemory` e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. MySQL começa vazio e preserva os cadastros existentes, sem seed automático. O comando explícito `scripts/seed-mysql.ps1` (ou `.sh`) aplica `scripts/seed-mysql.sql` no serviço local do Compose, em transação. Ele inclui os mesmos exemplos da memória, reutiliza nomes de colaboradores e nome/timestamp de workshops e completa atas e participações ausentes. Não altera o seed automático da API. Testes controlam o próprio estado e não dependem de seed manual.
+O seed executa uma vez por inicialização somente em `Development` com `InMemory` e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. MySQL começa vazio e preserva os cadastros existentes, sem seed automático. O comando explícito `scripts/seed-mysql.ps1` (ou `.sh`) aplica `scripts/seed-mysql.sql` no serviço local do Compose, em transação. Em banco vazio, inclui 30 colaboradores e 20 workshops trimestrais de 2022 a 2026, na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h (-03:00), com 20 atas e 480 participações. As presenças alternam deterministicamente pela posição nos exemplos, independentemente dos IDs do banco. Reutiliza nomes de colaboradores e nome/timestamp de workshops e completa atas e participações ausentes. Registros e presenças anteriores são preservados, portanto bancos já preenchidos podem exceder essas quantidades. Não altera o seed automático da API. Testes controlam o próprio estado e não dependem de seed manual.
 
 ## Frontend Angular
 

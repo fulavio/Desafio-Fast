@@ -45,3 +45,11 @@ test("seed reports SQL failure instead of declaring success", () => {
   commands.status = 1;
   assert.throws(() => seedMySql(commands.execute), /Seed MySQL falhou/);
 });
+
+test("seed summarizes the expanded examples after successful execution", () => {
+  const commands = new FakeSeedCommands();
+  assert.equal(
+    seedMySql(commands.execute),
+    "Seed MySQL concluido: 20 workshops trimestrais (2022–2026), 30 colaboradores, 20 atas e 480 participações de exemplo disponíveis. Registros anteriores foram preservados.",
+  );
+});

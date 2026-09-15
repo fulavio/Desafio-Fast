@@ -119,7 +119,7 @@ Ou, em Bash:
 bash ./scripts/seed-mysql.sh
 ```
 
-O script inicia o MySQL do Compose, aguarda o healthcheck e insere três workshops, quatro colaboradores, três atas e oito participações, com os mesmos exemplos do modo em memória. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
+O script inicia o MySQL do Compose, aguarda o healthcheck e, em um banco vazio, insere 30 colaboradores, 20 workshops, 20 atas e 480 participações. O calendário fixo cobre 2022 a 2026, com um workshop por trimestre, sempre na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h no offset -03:00. Cada workshop tem 24 participantes, com ausências alternadas de forma determinística; cada colaborador participa de 16 encontros. O seed em memória mantém seus exemplos menores. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
 
 Pode ser executado novamente, sequencialmente, sem duplicar os exemplos. Reutiliza colaboradores pelo nome e workshops pelo nome e timestamp exato; se houver vários correspondentes, usa o menor ID. Preserva descrições editadas e outros registros. Participações de exemplo removidas são recriadas ao executar o seed novamente. O seed é explícito e não é executado por `run-mysql` nem pelo startup da API. Os inserts são feitos em uma transação; o script não altera o schema nem apaga dados.
 
