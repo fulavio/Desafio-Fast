@@ -1,4 +1,8 @@
+using Swashbuckle.AspNetCore.Annotations;
+
 namespace Fast.Workshops.Api.Contracts;
 
-public sealed record CreateAttendanceRequest(int WorkshopId);
+[SwaggerSchema(Required = new[] { "workshopId" })]
+public sealed record CreateAttendanceRequest(
+    [property: SwaggerSchema(Description = "ID inteiro positivo de um workshop existente e sem ata; exemplo: 1.")] int WorkshopId);
 public sealed record AttendanceResponse(int Id, WorkshopResponse Workshop, IReadOnlyList<CollaboratorResponse> Collaborators);

@@ -57,6 +57,8 @@ npm --prefix frontend start
 
 Acesse [http://localhost:4200](http://localhost:4200). A API roda em [http://localhost:5000/api/atas](http://localhost:5000/api/atas).
 
+Com o backend em `Development` (perfil local padrão), acesse o [Swagger UI](http://localhost:5000/swagger) para consultar e executar os endpoints. O [documento OpenAPI](http://localhost:5000/swagger/v1/swagger.json) é gerado a partir dos controllers. Operações executadas pelo Swagger alteram os mesmos dados em memória usados pelo frontend.
+
 O frontend usa Angular 21, componentes standalone e testes Vitest pelo builder oficial do Angular. A URL da API está em `frontend/src/environments/environment.ts`. A origem CORS está em `backend/Fast.Workshops.Api/appsettings.json` e permite somente `http://localhost:4200` por padrão.
 
 O perfil local do backend ativa `Development` e cria três workshops, quatro colaboradores e três atas com participações variadas. Os dados permanecem em memória e são reiniciados quando o backend encerra. Fora de `Development`, o armazenamento começa vazio.
@@ -87,4 +89,4 @@ Os endpoints, payloads, validações e respostas de erro estão em [docs/API.md]
 
 ## Escopo
 
-Esta entrega usa armazenamento em memória. Banco de dados, autenticação, autorização, Swagger/OpenAPI e gráficos não fazem parte do escopo.
+Esta entrega usa armazenamento em memória. Banco de dados, autenticação, autorização e gráficos não fazem parte do escopo.

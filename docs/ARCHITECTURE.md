@@ -116,7 +116,7 @@ Não use repositório genérico nem Unit of Work próprio. As interfaces existem
 - converta erros conhecidos em `ProblemDetails`;
 - configure CORS apenas para a origem local do frontend;
 - configure logs JSON com o logger do ASP.NET Core;
-- não habilite Swagger/OpenAPI.
+- disponibilize Swagger UI em `/swagger` e o documento OpenAPI em `/swagger/v1/swagger.json` no ambiente `Development`; os metadados vêm dos controllers via Swashbuckle e incluem descrições, parâmetros, DTOs e respostas HTTP.
 
 ### Seed
 

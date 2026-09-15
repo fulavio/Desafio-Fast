@@ -2,6 +2,8 @@
 
 Todos os endpoints usam JSON. Erros seguem `ProblemDetails` (`application/problem+json`) com `status`, `title` e `detail`. Arrays vazios nunca são serializados como `null`.
 
+No ambiente `Development`, a documentação interativa fica em [Swagger UI](http://localhost:5000/swagger) e o contrato gerado em [OpenAPI JSON](http://localhost:5000/swagger/v1/swagger.json). Os controllers declaram descrições, parâmetros e respostas com seus DTOs e códigos HTTP. O botão **Try it out** permite executar as operações na API local.
+
 ## `POST /api/workshops`
 
 ```json

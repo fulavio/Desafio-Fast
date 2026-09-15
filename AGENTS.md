@@ -16,7 +16,7 @@ Se uma mudança afetar comportamento, arquitetura, comandos ou contratos, atuali
 ## Escopo
 
 - Implemente somente os requisitos obrigatórios do desafio.
-- Não implemente banco de dados, autenticação, autorização, Swagger/OpenAPI ou gráficos.
+- Não implemente banco de dados, autenticação, autorização ou gráficos.
 - Mantenha os dados em memória nesta entrega.
 - Preserve a possibilidade de trocar repositories em memória por persistência real posteriormente.
 - Não aplique Clean Architecture, arquitetura hexagonal ou onion architecture.

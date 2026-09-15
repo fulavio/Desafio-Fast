@@ -9,6 +9,16 @@ builder.Logging.AddJsonConsole();
 builder.Services.AddControllers(options => options.Filters.Add<ApiExceptionFilter>())
     .ConfigureApiBehaviorOptions(options => options.InvalidModelStateResponseFactory = BindingProblem.Create);
 builder.Services.AddProblemDetails();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    {
+        Title = "FAST Workshops API",
+        Version = "v1",
+        Description = "Cadastro de workshops, colaboradores e atas de presença. Dados armazenados em memória."
+    });
+    options.EnableAnnotations();
+});
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
     policy.WithOrigins(builder.Configuration["FrontendOrigin"] ?? "http://localhost:4200").AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddSingleton<InMemoryDatabase>();
@@ -27,6 +37,8 @@ app.UseCors();
 app.MapControllers();
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("v1/swagger.json", "FAST Workshops API v1"));
     using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<DevelopmentSeed>().Populate();
 }

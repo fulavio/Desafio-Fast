@@ -50,6 +50,8 @@ Use o servidor de testes do ASP.NET Core para integração. Cada teste cria e co
 
 Implementação: xUnit e `WebApplicationFactory<Program>` em ambiente `Testing`, sem seed automático. Os testes de regras usam repositories reais em memória; os de concorrência exercitam IDs atômicos, ata única, associação idempotente e snapshots. Datas são constantes e nenhuma chamada usa rede externa.
 
+`SwaggerDocumentationTests` usa um host em `Development` para verificar a página Swagger UI, a geração do OpenAPI, os sete endpoints, respostas de erro `ProblemDetails` e descrições dos filtros. Esses testes inspecionam a documentação e não dependem dos dados do seed.
+
 ## Frontend
 
 ```bash
