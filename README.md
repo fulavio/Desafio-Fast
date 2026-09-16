@@ -75,8 +75,6 @@ Com o backend em `Development` (perfil local padrão), acesse o [Swagger UI](htt
 
 O frontend usa Angular 21, componentes standalone e testes Vitest pelo builder oficial do Angular. A URL da API está em `frontend/src/environments/environment.ts`. A origem CORS está em `backend/Fast.Workshops.Api/appsettings.json` e permite somente `http://localhost:4200` por padrão.
 
-No modo `InMemory`, o perfil local ativa `Development` e cria três workshops, quatro colaboradores e três atas com participações variadas. Os dados são reiniciados quando o backend encerra. Fora de `Development`, a memória começa vazia. O modo `MySql` não executa esse seed.
-
 A lista carrega automaticamente seis workshops por vez conforme a rolagem. O botão “Carregar mais encontros” é uma alternativa para teclado ou navegadores sem suporte ao carregamento automático. Cada card mostra o total de participantes e até sete nomes em duas linhas; os detalhes exibem todos.
 
 Filtre por workshop, data e colaborador. Os filtros ficam na URL e são preservados ao voltar. Nos detalhes, Remover exclui apenas a presença, mantendo o cadastro. Cadastros e inclusão de participantes estão disponíveis pela [API](docs/API.md).
@@ -107,7 +105,13 @@ O script `Repositories/MySql/schema.sql` cria as tabelas automaticamente somente
 
 Referências: [imagem oficial MySQL](https://hub.docker.com/_/mysql), [provider MySQL para EF Core](https://www.nuget.org/packages/MySql.EntityFrameworkCore/10.0.9).
 
-## Semear o MySQL
+## Dados de exemplo
+
+### Em memória
+
+No modo `InMemory`, o perfil local ativa `Development` e cria três workshops, quatro colaboradores e três atas com participações variadas. Os dados são reiniciados quando o backend encerra. Fora de `Development`, a memória começa vazia. O modo `MySql` não executa esse seed.
+
+### Semear o MySQL
 
 Com Docker ativo e `.env` configurado, execute:
 
@@ -121,9 +125,9 @@ Ou, em Bash:
 bash ./scripts/seed-mysql.sh
 ```
 
-O script inicia o MySQL do Compose, aguarda o healthcheck e, em um banco vazio, insere 30 colaboradores, 20 workshops, 20 atas e 480 participações. O calendário fixo cobre 2022 a 2026, com um workshop por trimestre, sempre na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h no offset -03:00. Cada workshop tem 24 participantes, com ausências alternadas de forma determinística; cada colaborador participa de 16 encontros. O seed em memória mantém seus exemplos menores. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
+O script inicia o MySQL do Compose, aguarda o healthcheck e, em um banco vazio, insere 30 colaboradores, 20 workshops, 20 atas e 480 participações. O calendário fixo cobre 2022 a 2026, com um workshop por trimestre, sempre na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h no offset -03:00. Cada workshop tem 24 participantes, com ausências alternadas de forma determinística pela posição nos exemplos, independentemente dos IDs do banco; cada colaborador participa de 16 encontros. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
 
-Pode ser executado novamente, sequencialmente, sem duplicar os exemplos. Reutiliza colaboradores pelo nome e workshops pelo nome e timestamp exato; se houver vários correspondentes, usa o menor ID. Preserva descrições editadas e outros registros. Participações de exemplo removidas são recriadas ao executar o seed novamente. O seed é explícito e não é executado por `run-mysql` nem pelo startup da API. Os inserts são feitos em uma transação; o script não altera o schema nem apaga dados.
+Pode ser executado novamente, sequencialmente, sem duplicar os exemplos. Reutiliza colaboradores pelo nome e workshops pelo nome e timestamp exato; se houver vários correspondentes, usa o menor ID. Preserva descrições editadas e outros registros; bancos já preenchidos podem exceder as quantidades de exemplo. Participações de exemplo removidas são recriadas ao executar o seed novamente. O seed é explícito e não é executado por `run-mysql` nem pelo startup da API. Os inserts são feitos em uma transação; o script não altera o schema nem apaga dados.
 
 ## Validação
 

@@ -27,11 +27,11 @@ ou
 .\scripts\check.ps1
 ```
 
-## Backend
-
-Os scripts executam, em sequência: testes do launcher com `node --test scripts/run-project.test.mjs`, `dotnet format --verify-no-changes`, build e testes .NET, Prettier, ESLint, build de produção Angular e testes Angular sem watch. A primeira falha interrompe a execução com código diferente de zero.
+Os scripts executam, em sequência: testes dos scripts com `node --test scripts/run-project.test.mjs scripts/seed-mysql.test.mjs`, `dotnet format --verify-no-changes`, build e testes .NET, Prettier, ESLint, build de produção Angular e testes Angular sem watch. A primeira falha interrompe a execução com código diferente de zero.
 
 No Windows, use PowerShell ou Git Bash com as ferramentas Windows no PATH. WSL é um ambiente separado e precisa de .NET/Node próprios. Feche os servidores antes de executar o setup ou os checks, pois executáveis podem estar bloqueados no Windows.
+
+## Backend
 
 ```bash
 dotnet test backend/Fast.Workshops.sln --no-restore
@@ -46,6 +46,10 @@ Cubra:
 - ordenação de colaboradores;
 - projeção de workshops por colaborador;
 - filtros de ata por nome, data e combinação;
+- paginação, limites e desempate estável;
+- métricas agregadas, zeros e atualização após remoção;
+- persistência, integridade e contratos HTTP com MySQL em containers descartáveis;
+- seed MySQL: conteúdo dos exemplos, idempotência e preservação de registros;
 - status e JSON de cada endpoint.
 
 Use o servidor de testes do ASP.NET Core para integração. Cada teste cria e controla seu próprio estado.
@@ -80,7 +84,10 @@ Cubra:
 - limpeza dos filtros;
 - query string;
 - navegação para detalhes;
-- renderização do workshop e participantes.
+- renderização do workshop e participantes;
+- remoção de participantes e tratamento de falhas;
+- paginação por rolagem e botão alternativo;
+- métricas: gráficos, tabelas, zeros, falhas parciais e retry.
 
 Use as ferramentas oficiais do Angular. Simule somente a fronteira HTTP com classes fake nomeadas.
 
@@ -100,7 +107,7 @@ Não há meta numérica de cobertura nesta entrega. Priorize regras, contratos e
 
 Os testes do launcher usam processos e comandos fake nomeados, sem iniciar Docker ou servidores. Cobrem configuração MySQL e escape de senha, isolamento do modo em memória, falhas e encerramento dos processos ao receber Ctrl+C. Execute-os isoladamente com `node --test scripts/run-project.test.mjs`.
 
-`seed-mysql.test.mjs` verifica a chamada ao Compose, o resumo dos exemplos após sucesso e a propagação de falhas usando comandos fake, sem Docker. `MySqlSeedTests` executa o SQL real em container descartável e verifica 30 colaboradores, 20 workshops/atas e 480 participações, repetição sem duplicatas, IDs estáveis, Unicode, timestamps e preservação de registros e descrições editados. Confere um encontro por trimestre de 2022 a 2026, na segunda quinta-feira de janeiro, abril, julho e outubro às 16h (-03:00), 24 participantes por ata e 16 presenças por colaborador. Ambas as suítes fazem parte de `check.sh` e `check.ps1`.
+`seed-mysql.test.mjs` verifica a chamada ao Compose, o resumo dos exemplos após sucesso e a propagação de falhas usando comandos fake, sem Docker. `MySqlSeedTests` executa o SQL real em container descartável e valida o conjunto de exemplos descrito em [Dados de exemplo](../README.md#dados-de-exemplo), incluindo quantidades, calendário e distribuição de presenças. Também verifica repetição sem duplicatas, IDs estáveis, Unicode, timestamps e preservação de registros e descrições editados. Ambas as suítes fazem parte de `check.sh` e `check.ps1`.
 
 ## Métricas
 

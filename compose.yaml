@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:latest
+    image: mysql:lts
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: workshops

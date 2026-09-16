@@ -12,6 +12,8 @@ Como o backend é uma API, não há Razor Views. O Angular exerce a função de 
 /
 ├── AGENTS.md
 ├── README.md
+├── compose.yaml
+├── .env.example
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── API.md
@@ -20,7 +22,15 @@ Como o backend é uma API, não há Razor Views. O Angular exerce a função de 
 │   ├── setup.sh
 │   ├── setup.ps1
 │   ├── check.sh
-│   └── check.ps1
+│   ├── check.ps1
+│   ├── run-inmemory.sh / run-inmemory.ps1
+│   ├── run-mysql.sh / run-mysql.ps1
+│   ├── run-project.mjs
+│   ├── run-project.test.mjs
+│   ├── seed-mysql.sh / seed-mysql.ps1
+│   ├── seed-mysql.mjs
+│   ├── seed-mysql.sql
+│   └── seed-mysql.test.mjs
 ├── backend/
 │   ├── Fast.Workshops.sln
 │   ├── Fast.Workshops.Api/
@@ -34,7 +44,8 @@ Como o backend é uma API, não há Razor Views. O Angular exerce a função de 
 │   │   ├── Program.cs
 │   │   └── Fast.Workshops.Api.csproj
 │   └── tests/
-│       └── Fast.Workshops.Api.Tests/
+│       ├── Fast.Workshops.Api.Tests/
+│       └── Fast.Workshops.MySql.Tests/
 └── frontend/
     ├── angular.json
     ├── package.json
@@ -43,6 +54,9 @@ Como o backend é uma API, não há Razor Views. O Angular exerce a função de 
         ├── app/
         │   ├── core/
         │   ├── features/
+        │   │   ├── attendance-records/
+        │   │   ├── metrics/
+        │   │   └── workshops/
         │   └── shared/
         ├── styles.scss
         └── main.ts
@@ -82,7 +96,8 @@ Request e response DTOs ficam em `Contracts`. Não serialize models diretamente.
 
 - `WorkshopsController`;
 - `CollaboratorsController`;
-- `AttendanceRecordsController`, com rota pública `/api/atas`.
+- `AttendanceRecordsController`, com rota pública `/api/atas`;
+- `MetricsController`, com rota pública `/api/metrics`.
 
 Controllers validam binding, chamam services e transformam resultados em status HTTP. Não acessam armazenamento nem implementam filtros, ordenação ou associação.
 
@@ -90,7 +105,8 @@ Controllers validam binding, chamam services e transformam resultados em status 
 
 - `WorkshopService`;
 - `CollaboratorService`;
-- `AttendanceRecordService`.
+- `AttendanceRecordService`;
+- `MetricsService`, responsável pelas métricas agregadas.
 
 Services executam cadastros, consultas, filtros, ordenação e mapeamento de DTOs. Permanecem classes concretas. Não crie handlers, commands, queries, use cases ou mediators.
 
@@ -133,7 +149,7 @@ O Compose usa `mysql:latest` com volume nomeado em `/var/lib/mysql`, bind da por
 
 ### Seed
 
-O seed executa uma vez por inicialização somente em `Development` com `InMemory` e inclui pelo menos três workshops, quatro colaboradores, três atas e participações variadas. MySQL começa vazio e preserva os cadastros existentes, sem seed automático. O comando explícito `scripts/seed-mysql.ps1` (ou `.sh`) aplica `scripts/seed-mysql.sql` no serviço local do Compose, em transação. Em banco vazio, inclui 30 colaboradores e 20 workshops trimestrais de 2022 a 2026, na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h (-03:00), com 20 atas e 480 participações. As presenças alternam deterministicamente pela posição nos exemplos, independentemente dos IDs do banco. Reutiliza nomes de colaboradores e nome/timestamp de workshops e completa atas e participações ausentes. Registros e presenças anteriores são preservados, portanto bancos já preenchidos podem exceder essas quantidades. Não altera o seed automático da API. Testes controlam o próprio estado e não dependem de seed manual.
+`DevelopmentSeed` popula os exemplos por meio dos services e é chamado por `Program.cs`. O seed MySQL é independente da API: as entradas `.ps1` e `.sh` delegam a `scripts/seed-mysql.mjs`, que aplica `scripts/seed-mysql.sql` no serviço do Compose. Condições de execução, comandos, conteúdo e regras de reaplicação estão centralizados em [Dados de exemplo](../README.md#dados-de-exemplo).
 
 ## Frontend Angular
 
@@ -147,6 +163,7 @@ app/
 │   └── errors/
 ├── features/
 │   ├── attendance-records/
+│   ├── metrics/
 │   └── workshops/
 └── shared/
     ├── empty-state/
@@ -158,6 +175,7 @@ Rotas:
 
 - `/atas`: listagem e filtros;
 - `/workshops/:id`: detalhes;
+- `/metricas`: gráficos e tabelas de participação;
 - rotas vazia e desconhecida redirecionam para `/atas`.
 
 O frontend consome a API como fonte de verdade; mocks existem somente em testes. Use signals e services Angular simples, sem biblioteca externa de estado. Preserve filtros na query string. A listagem usa `GET /api/atas/pagina` com workshop, data e colaborador filtrados pelo service antes da paginação. A resposta contém `items` e `total`; cada resumo inclui até sete participantes em ordem alfabética e `participantCount` completo. O service mantém filtros, ordenação e paginação sobre os snapshots dos repositories; estes ainda leem todos os registros. A paginação reduz a resposta HTTP e a renderização, mas não a leitura do banco. Datas e nomes empatados usam o ID da ata como desempate estável.
@@ -167,16 +185,6 @@ O Angular carrega lotes de seis cards automaticamente por rolagem (`Intersection
 `WorkshopsApiService` concentra HTTP. `requestState` compartilha estados de carregamento/erro; `switchMap` cancela buscas anteriores e `takeUntilDestroyed` encerra subscriptions. No Angular, as dependências são resolvidas no construtor com `inject()` e passadas aos métodos que observam as rotas, seguindo o lint oficial. O backend usa parâmetros de construtor. A página de detalhes consulta `GET /api/atas` sem filtros e encontra a ata por `workshop.id`. Workshops sem ata não aparecem nessa consulta; a página informa que a ata não foi encontrada. Cada participante tem a ação Remover, que usa `DELETE /api/atas/{ataId}/colaboradores/{colaboradorId}`. A UI bloqueia cliques repetidos durante a remoção, atualiza os participantes após sucesso e mantém a lista com mensagem de erro em caso de falha.
 
 A UI deve exibir loading, erro e lista vazia; usar labels visíveis; navegar por links reais; funcionar a partir de 320 px; oferecer teclado, foco visível e contraste adequado.
-
-## Ordem de implementação
-
-1. Criar solution e projeto MVC.
-2. Implementar models e repositories em memória.
-3. Implementar contracts, services e controllers.
-4. Adicionar tratamento de erros, seed e testes do backend.
-5. Criar cliente HTTP, listagem, filtros e detalhes no Angular.
-6. Adicionar estados, acessibilidade, responsividade e testes do frontend.
-7. Executar `./scripts/check.sh` e atualizar a documentação.
 
 ## Métricas agregadas
 
