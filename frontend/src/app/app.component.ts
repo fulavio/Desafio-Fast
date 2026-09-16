@@ -14,6 +14,7 @@ import { RouterLink, RouterOutlet } from "@angular/router";
       >
       <span class="header-divider"></span
       ><span class="product-name">Workshops</span>
+      <a routerLink="/metricas">Métricas</a>
       <span class="internal-label">DESENVOLVIMENTO & CONEXÃO</span>
     </header>
     <main #mainContent id="main" tabindex="-1"><router-outlet /></main>

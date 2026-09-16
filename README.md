@@ -147,6 +147,6 @@ No Windows, os scripts `.ps1` usam `npm.cmd`. Para executar os `.sh`, use Git Ba
 
 Os endpoints, payloads, validações e respostas de erro estão em [docs/API.md](docs/API.md).
 
-## Escopo
+## Métricas de participação
 
-Esta entrega oferece armazenamento em memória e MySQL. Autenticação, autorização e gráficos não fazem parte do escopo.
+Acesse Métricas no cabeçalho (rota /metricas) para consultar barras de workshops por colaborador e pizza de colaboradores por workshop, com ng2-charts e Chart.js. As contagens vêm de duas requisições ao backend (uma por gráfico), incluem zeros e não dependem dos filtros ou da paginação da listagem. Tabelas acessíveis apresentam os mesmos valores; Atualizar métricas busca novamente os totais.

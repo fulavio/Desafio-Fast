@@ -1,0 +1,106 @@
+<a class="back-link" routerLink="/atas">← Voltar aos workshops</a>
+<header class="page-heading">
+  <p class="eyebrow">PARTICIPAÇÃO</p>
+  <h1>Métricas dos workshops</h1>
+  <p class="intro">Totais de presenças registradas em todos os workshops.</p>
+</header>
+<button
+  type="button"
+  (click)="retry()"
+  [disabled]="people().loading || workshops().loading"
+>
+  Atualizar métricas
+</button>
+<div class="metrics-grid">
+  <section aria-labelledby="people-heading">
+    <h2 id="people-heading">Workshops por colaborador</h2>
+    @if (people().loading) {
+      <app-loading-state />
+    } @else if (people().error) {
+      <app-error-state [message]="people().error" (retry)="retry()" />
+    } @else if (!people().value.length) {
+      <p role="status">Nenhum colaborador cadastrado.</p>
+    } @else {
+      <div class="bar-scroll">
+        <div class="chart" [style.height.px]="barHeight()">
+          <canvas
+            baseChart
+            type="bar"
+            [data]="barChart()"
+            [options]="barOptions"
+            role="img"
+            aria-label="Workshops por colaborador. Valores na tabela abaixo."
+          ></canvas>
+        </div>
+      </div>
+      <table>
+        <caption>
+          Totais por colaborador
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Colaborador</th>
+            <th scope="col">Workshops</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (person of people().value; track person.collaboratorId) {
+            <tr>
+              <th scope="row">
+                {{ person.name }} (#{{ person.collaboratorId }})
+              </th>
+              <td>{{ person.workshopsCount }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+  <section aria-labelledby="workshops-heading">
+    <h2 id="workshops-heading">Colaboradores por workshop</h2>
+    <p>Uma pessoa pode participar de vários workshops.</p>
+    @if (workshops().loading) {
+      <app-loading-state />
+    } @else if (workshops().error) {
+      <app-error-state [message]="workshops().error" (retry)="retry()" />
+    } @else if (!workshops().value.length) {
+      <p role="status">Nenhum workshop cadastrado.</p>
+    } @else {
+      @if (hasParticipants()) {
+        <div class="chart pie">
+          <canvas
+            baseChart
+            type="pie"
+            [data]="pieChart()"
+            [options]="pieOptions"
+            role="img"
+            aria-label="Colaboradores por workshop. Valores na tabela abaixo."
+          ></canvas>
+        </div>
+      } @else {
+        <p role="status">Nenhuma participação registrada.</p>
+      }
+      <table>
+        <caption>
+          Totais por workshop
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Workshop</th>
+            <th scope="col">Colaboradores</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (workshop of workshops().value; track workshop.workshopId) {
+            <tr>
+              <th scope="row">
+                {{ workshop.name }} (#{{ workshop.workshopId }})
+              </th>
+              <td>{{ workshop.collaboratorsCount }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </section>
+</div>

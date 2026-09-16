@@ -101,3 +101,9 @@ Não há meta numérica de cobertura nesta entrega. Priorize regras, contratos e
 Os testes do launcher usam processos e comandos fake nomeados, sem iniciar Docker ou servidores. Cobrem configuração MySQL e escape de senha, isolamento do modo em memória, falhas e encerramento dos processos ao receber Ctrl+C. Execute-os isoladamente com `node --test scripts/run-project.test.mjs`.
 
 `seed-mysql.test.mjs` verifica a chamada ao Compose, o resumo dos exemplos após sucesso e a propagação de falhas usando comandos fake, sem Docker. `MySqlSeedTests` executa o SQL real em container descartável e verifica 30 colaboradores, 20 workshops/atas e 480 participações, repetição sem duplicatas, IDs estáveis, Unicode, timestamps e preservação de registros e descrições editados. Confere um encontro por trimestre de 2022 a 2026, na segunda quinta-feira de janeiro, abril, julho e outubro às 16h (-03:00), 24 participantes por ata e 16 presenças por colaborador. Ambas as suítes fazem parte de `check.sh` e `check.ps1`.
+
+## Métricas
+
+`MetricsTests` cobre totais distintos, adição idempotente, remoção, zeros, workshops sem ata, nomes repetidos, ordenação, banco vazio, JSON coletivo e remoção da rota individual. `MySqlHttpTests` verifica os contratos agregados com persistência real e atualização após remoção.
+
+`metrics-page.component.spec.ts` verifica rota, loading, gráficos e tabelas usando exatamente duas requisições agregadas e nenhuma consulta à listagem de colaboradores, zeros, listas vazias, falhas parciais e retry. `FakeMetricsServer` simula somente HTTP; `FakeChartDirective` substitui a renderização canvas não disponível no jsdom, preservando inputs. O desenho real dos gráficos é conferido manualmente em navegador desktop e mobile.

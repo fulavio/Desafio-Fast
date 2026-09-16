@@ -2,6 +2,13 @@ import { Routes } from "@angular/router";
 
 export const routes: Routes = [
   {
+    path: "metricas",
+    loadComponent: () =>
+      import("./features/metrics/metrics-page.component").then(
+        (module) => module.MetricsPageComponent,
+      ),
+  },
+  {
     path: "atas",
     loadComponent: () =>
       import("./features/attendance-records/attendance-page.component").then(

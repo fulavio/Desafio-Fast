@@ -15,7 +15,6 @@ Se uma mudança afetar comportamento, arquitetura, comandos ou contratos, atuali
 
 ## Escopo
 
-- Não implemente autenticação, autorização ou gráficos.
 - Ofereça memória (padrão) e MySQL, selecionados por configuração na inicialização, sem migração ou fallback automático.
 - Mantenha Docker Compose com mysql e volume persistente para desenvolvimento.
 - Não aplique Clean Architecture, arquitetura hexagonal ou onion architecture.

@@ -1,0 +1,62 @@
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+section {
+  min-width: 0;
+  padding: 24px;
+  background: white;
+  border: 1px solid #dbe3db;
+  border-radius: 12px;
+}
+section > p {
+  line-height: 1.6;
+}
+.chart {
+  position: relative;
+  width: 100%;
+}
+.pie {
+  height: 320px;
+}
+.bar-scroll {
+  max-height: 480px;
+  overflow-y: auto;
+  margin-top: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  table-layout: fixed;
+}
+caption {
+  text-align: left;
+  font-weight: 650;
+  margin-bottom: 12px;
+}
+th,
+td {
+  padding: 10px 4px;
+  text-align: left;
+  border-bottom: 1px solid #dbe3db;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+td {
+  text-align: right;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+@media (max-width: 800px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  section {
+    padding: 16px;
+  }
+}

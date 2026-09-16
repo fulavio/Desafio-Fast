@@ -177,3 +177,9 @@ A UI deve exibir loading, erro e lista vazia; usar labels visíveis; navegar por
 5. Criar cliente HTTP, listagem, filtros e detalhes no Angular.
 6. Adicionar estados, acessibilidade, responsividade e testes do frontend.
 7. Executar `./scripts/check.sh` e atualizar a documentação.
+
+## Métricas agregadas
+
+`MetricsController` expõe os dois endpoints em `/api/metrics`; `MetricsService` agrega snapshots das três interfaces existentes de repositories, com o mesmo comportamento em memória e MySQL. Não há novos projetos ou schema. A agregação ocorre no servidor, mas ainda lê as atas completas, assim como as consultas existentes.
+
+A rota lazy `/metricas`, em `features/metrics`, usa `ng2-charts` e Chart.js para barras horizontais e pizza. `MetricsApiService` consulta `/api/metrics/colaboradores/workshops-count` para todos os totais por colaborador e `/api/metrics/workshops/colaboradores-count` para os totais por workshop: duas requisições por carregamento, sem buscar `/api/colaboradores`. O service percorre uma única leitura das atas para agrupar participações por colaborador, inclui zeros e ordena por nome e ID. A rota individual foi removida. Não há agregação de presenças no navegador. As duas seções possuem estados independentes de loading/erro, retry e tabelas acessíveis com zeros e IDs para diferenciar nomes repetidos. A pizza não é desenhada quando todos os totais são zero. O botão Atualizar recarrega ambas as seções.

@@ -24,6 +24,7 @@ var usesMySql = builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddScoped<WorkshopService>();
 builder.Services.AddScoped<CollaboratorService>();
 builder.Services.AddScoped<AttendanceRecordService>();
+builder.Services.AddScoped<MetricsService>();
 builder.Services.AddScoped<DevelopmentSeed>();
 
 var app = builder.Build();

@@ -147,3 +147,29 @@ Mensagens de erro incluem o valor problemático e o formato esperado, sem stack 
 O filtro `data` considera a data de calendário no fuso armazenado, sem convertê-la para UTC. `data=` vazio é inválido; para não filtrar por data, omita o parâmetro. A ordenação considera o instante do workshop e usa nome como desempate, sem diferenciar maiúsculas de minúsculas.
 
 Erros de binding retornam `400` com o campo e o formato esperado. Quando o JSON não pode ser convertido, a mensagem identifica `JSON inválido ou incompatível` sem repetir o corpo da requisição. O middleware padrão fornece `ProblemDetails` para falhas inesperadas, sem expor stack traces.
+
+## `GET /api/metrics/colaboradores/workshops-count`
+
+Conta workshops distintos com presença registrada para todos os colaboradores. Retorna `200 OK` com uma lista ordenada por nome (sem distinguir maiúsculas) e ID como desempate:
+
+```json
+[
+  { "collaboratorId": 1, "name": "Ana Souza", "workshopsCount": 2 },
+  { "collaboratorId": 2, "name": "Bruno Lima", "workshopsCount": 0 }
+]
+```
+
+Inclui colaboradores sem presença com zero; sem colaboradores retorna `[]`. Nomes repetidos permanecem separados por ID. A rota individual `/api/metrics/colaboradores/{id}/workshops-count` foi removida e retorna `404`.
+
+## `GET /api/metrics/workshops/colaboradores-count`
+
+Retorna `200 OK` com todos os workshops em ordem de nome (sem distinguir maiúsculas) e ID como desempate:
+
+```json
+[
+  { "workshopId": 2, "name": "Angular", "collaboratorsCount": 0 },
+  { "workshopId": 1, "name": "Clean Code", "collaboratorsCount": 2 }
+]
+```
+
+Workshops sem ata ou sem participantes retornam zero; banco sem workshops retorna `[]`. Nomes repetidos continuam separados por ID. As métricas consideram presenças atuais, independentemente dos filtros/paginação de atas. Uma pessoa pode ser contada em vários workshops. Remoções de presença são refletidas na próxima consulta. Cada requisição lê o estado atual, sem snapshot compartilhado entre requisições.

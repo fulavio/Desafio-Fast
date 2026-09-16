@@ -36,8 +36,13 @@ public sealed class MySqlHttpTests(MySqlTestDatabase database) : IClassFixture<M
         Assert.Empty((await client.GetFromJsonAsync<AttendanceResponse[]>("/api/atas?data=2026-10-09"))!);
         var people = await client.GetFromJsonAsync<CollaboratorParticipationResponse[]>("/api/colaboradores");
         Assert.Equal(attendance.Workshop.Id, Assert.Single(Assert.Single(people!).Workshops).Id);
+        var count = await client.GetFromJsonAsync<CollaboratorWorkshopsCountResponse[]>("/api/metrics/colaboradores/workshops-count");
+        Assert.Equal(new CollaboratorWorkshopsCountResponse(collaborator.Id, collaborator.Name, 1), Assert.Single(count!));
+        var totals = await client.GetFromJsonAsync<WorkshopCollaboratorsCountResponse[]>("/api/metrics/workshops/colaboradores-count");
+        Assert.Equal(new WorkshopCollaboratorsCountResponse(attendance.Workshop.Id, attendance.Workshop.Name, 1), Assert.Single(totals!));
         var route = $"/api/atas/{attendance.Id}/colaboradores/{collaborator.Id}";
         Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync(route)).StatusCode);
+        Assert.Equal(0, Assert.Single((await client.GetFromJsonAsync<CollaboratorWorkshopsCountResponse[]>("/api/metrics/colaboradores/workshops-count"))!).WorkshopsCount);
         Assert.Equal(HttpStatusCode.NotFound, (await client.DeleteAsync(route)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await client.GetAsync("/api/atas?data=invalid")).StatusCode);
     }
