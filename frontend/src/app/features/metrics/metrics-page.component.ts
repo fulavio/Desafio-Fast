@@ -71,12 +71,23 @@ export class MetricsPageComponent {
     responsive: true,
     maintainAspectRatio: false,
     animation: false,
-    plugins: { legend: { position: "bottom" } },
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          sort: (first, second, chart): number => {
+            const totals = chart.datasets[0]?.data ?? [];
+            return (
+              Number(totals[second.index ?? -1] ?? 0) -
+              Number(totals[first.index ?? -1] ?? 0)
+            );
+          },
+        },
+      },
+    },
   };
   readonly barChart = computed<ChartData<"bar">>(() => ({
-    labels: this.people().value.map(
-      (person) => `${person.name} (#${person.collaboratorId})`,
-    ),
+    labels: this.people().value.map((person) => person.name),
     datasets: [
       {
         label: "Workshops",
@@ -86,9 +97,7 @@ export class MetricsPageComponent {
     ],
   }));
   readonly pieChart = computed<ChartData<"pie">>(() => ({
-    labels: this.workshops().value.map(
-      (workshop) => `${workshop.name} (#${workshop.workshopId})`,
-    ),
+    labels: this.workshops().value.map((workshop) => workshop.name),
     datasets: [
       {
         label: "Colaboradores",

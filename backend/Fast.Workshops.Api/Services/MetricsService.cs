@@ -13,7 +13,8 @@ public sealed class MetricsService(ICollaboratorRepository collaborators,
             .SelectMany(record => record.CollaboratorIds.Select(id => (CollaboratorId: id, record.WorkshopId)))
             .Distinct().GroupBy(participation => participation.CollaboratorId)
             .ToDictionary(group => group.Key, group => group.Count());
-        return collaborators.List().OrderBy(person => person.Name, StringComparer.OrdinalIgnoreCase)
+        return collaborators.List().OrderByDescending(person => counts.GetValueOrDefault(person.Id))
+            .ThenBy(person => person.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(person => person.Id)
             .Select(person => new CollaboratorWorkshopsCountResponse(person.Id, person.Name,
                 counts.GetValueOrDefault(person.Id))).ToArray();
@@ -24,7 +25,8 @@ public sealed class MetricsService(ICollaboratorRepository collaborators,
     {
         var counts = attendanceRecords.List().ToDictionary(record => record.WorkshopId,
             record => record.CollaboratorIds.Count);
-        return workshops.List().OrderBy(workshop => workshop.Name, StringComparer.OrdinalIgnoreCase)
+        return workshops.List().OrderByDescending(workshop => counts.GetValueOrDefault(workshop.Id))
+            .ThenBy(workshop => workshop.Name, StringComparer.OrdinalIgnoreCase)
             .ThenBy(workshop => workshop.Id)
             .Select(workshop => new WorkshopCollaboratorsCountResponse(workshop.Id, workshop.Name,
                 counts.GetValueOrDefault(workshop.Id))).ToArray();

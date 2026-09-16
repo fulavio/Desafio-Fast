@@ -47,7 +47,7 @@
           @for (person of people().value; track person.collaboratorId) {
             <tr>
               <th scope="row">
-                {{ person.name }} (#{{ person.collaboratorId }})
+                {{ person.name }}
               </th>
               <td>{{ person.workshopsCount }}</td>
             </tr>
@@ -94,7 +94,7 @@
           @for (workshop of workshops().value; track workshop.workshopId) {
             <tr>
               <th scope="row">
-                {{ workshop.name }} (#{{ workshop.workshopId }})
+                {{ workshop.name }}
               </th>
               <td>{{ workshop.collaboratorsCount }}</td>
             </tr>

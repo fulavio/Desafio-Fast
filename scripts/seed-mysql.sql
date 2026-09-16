@@ -49,22 +49,30 @@ SELECT s.name FROM seed_collaborators s
 WHERE NOT EXISTS (SELECT 1 FROM collaborators c WHERE c.name = s.name);
 
 CREATE TEMPORARY TABLE seed_workshop_ids AS
-SELECT s.seed_order, MIN(w.id) AS id FROM seed_workshops s
+SELECT s.seed_order, MIN(w.id) AS id,
+    CAST(MOD(CONV(LEFT(SHA2(CONCAT('workshop:', s.seed_order), 256), 8), 16, 10), 51) AS SIGNED) - 25 AS popularity
+FROM seed_workshops s
 JOIN workshops w ON w.name = s.name AND w.held_at = s.held_at GROUP BY s.seed_order;
 CREATE TEMPORARY TABLE seed_collaborator_ids AS
-SELECT s.seed_order, MIN(c.id) AS id FROM seed_collaborators s
+SELECT s.seed_order, MIN(c.id) AS id,
+    15 + MOD(CONV(LEFT(SHA2(CONCAT('collaborator:', s.seed_order), 256), 8), 16, 10), 71) AS frequency
+FROM seed_collaborators s
 JOIN collaborators c ON c.name = s.name GROUP BY s.seed_order;
 
 INSERT INTO attendance_records (workshop_id)
 SELECT s.id FROM seed_workshop_ids s
 WHERE NOT EXISTS (SELECT 1 FROM attendance_records a WHERE a.workshop_id = s.id);
 
--- Rotate absences by seed position, independent of database IDs: 24 attendees per workshop.
+-- Stable pseudo-random profiles and draws avoid uniform totals without accumulating
+-- new random attendees on every run. Seed positions keep the result independent of database IDs.
+-- Frequency is 15..85, popularity is -25..25, and attendance probability is clamped to 5..95%.
 INSERT INTO attendance_participants (attendance_id, collaborator_id)
 SELECT a.id, c.id FROM seed_workshop_ids w
 CROSS JOIN seed_collaborator_ids c
 JOIN attendance_records a ON a.workshop_id = w.id
-WHERE MOD(w.seed_order + c.seed_order, 5) <> 0 AND NOT EXISTS (
+WHERE MOD(CONV(LEFT(SHA2(CONCAT('attendance:', w.seed_order, ':', c.seed_order), 256), 8), 16, 10), 100)
+    < GREATEST(5, LEAST(95, c.frequency + w.popularity))
+AND NOT EXISTS (
     SELECT 1 FROM attendance_participants existing
     WHERE existing.attendance_id = a.id AND existing.collaborator_id = c.id
 );

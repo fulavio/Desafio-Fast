@@ -153,4 +153,4 @@ Os endpoints, payloads, validações e respostas de erro estão em [docs/API.md]
 
 ## Métricas de participação
 
-Acesse Métricas no cabeçalho (rota /metricas) para consultar barras de workshops por colaborador e pizza de colaboradores por workshop, com ng2-charts e Chart.js. As contagens vêm de duas requisições ao backend (uma por gráfico), incluem zeros e não dependem dos filtros ou da paginação da listagem. Tabelas acessíveis apresentam os mesmos valores; Atualizar métricas busca novamente os totais.
+Acesse Métricas no cabeçalho (rota /metricas) para consultar barras de workshops por colaborador e pizza de colaboradores por workshop, com ng2-charts e Chart.js. As contagens vêm de duas requisições ao backend (uma por gráfico), incluem zeros e não dependem dos filtros ou da paginação da listagem. Gráficos e tabelas acessíveis apresentam os totais em ordem decrescente, com nome e ID como desempate; Atualizar métricas busca novamente os totais.

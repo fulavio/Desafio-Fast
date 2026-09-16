@@ -7,6 +7,7 @@ import {
 import { provideRouter } from "@angular/router";
 import { RouterTestingHarness } from "@angular/router/testing";
 import { BaseChartDirective } from "ng2-charts";
+import { ChartData, LegendItem } from "chart.js";
 import { routes } from "../../app.routes";
 import { MetricsPageComponent } from "./metrics-page.component";
 import { FakeChartDirective } from "../../../testing/fake-chart.directive";
@@ -40,9 +41,14 @@ describe("Metrics page", () => {
     server.workshops();
     await harness.fixture.whenStable();
     expect(page.barChart().datasets[0].data).toEqual([17, 0]);
-    expect(page.barChart().labels).toEqual(["Ana (#2)", "Ana (#9)"]);
+    expect(page.barChart().labels).toEqual(["Ana", "Ana"]);
     expect(page.pieChart().datasets[0].data).toEqual([8, 0]);
-    expect(page.pieChart().labels).toEqual(["Angular (#3)", "Code (#4)"]);
+    expect(page.pieChart().labels).toEqual(["Angular", "Code"]);
+    const rowNames = Array.from(
+      harness.routeNativeElement!.querySelectorAll("tbody th"),
+      (cell) => cell.textContent?.trim(),
+    );
+    expect(rowNames).toEqual(["Ana", "Ana", "Angular", "Code"]);
     expect(page.barHeight()).toBe(280);
     expect(harness.routeNativeElement?.querySelectorAll("canvas").length).toBe(
       2,
@@ -56,6 +62,29 @@ describe("Metrics page", () => {
         ?.querySelector(".back-link")
         ?.getAttribute("href"),
     ).toBe("/atas");
+  });
+
+  it("sorts pie legends by descending totals while preserving slice indices and colors", async () => {
+    const harness = await RouterTestingHarness.create();
+    const page = await harness.navigateByUrl("/metricas", MetricsPageComponent);
+    server.people();
+    server.workshops();
+    const chart: ChartData<"pie"> = {
+      labels: ["Code", "Angular", "Empty", "Testing"],
+      datasets: [{ data: [1, 8, 0, 8] }],
+    };
+    const legends: LegendItem[] = chart.labels!.map((label, index) => ({
+      text: String(label),
+      index,
+      fillStyle: ["red", "blue", "gray", "green"][index],
+    }));
+    const sort = page.pieOptions.plugins!.legend!.labels!.sort!;
+    const ordered = [...legends].sort((first, second) =>
+      sort(first, second, chart),
+    );
+    expect(ordered).toEqual([legends[1], legends[3], legends[0], legends[2]]);
+    expect(chart.datasets[0].data).toEqual([1, 8, 0, 8]);
+    expect(chart.labels).toEqual(["Code", "Angular", "Empty", "Testing"]);
   });
 
   it("handles empty lists without waiting for nonexistent per-person requests", async () => {

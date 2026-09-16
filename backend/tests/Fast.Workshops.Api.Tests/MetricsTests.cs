@@ -30,15 +30,35 @@ public sealed class MetricsTests
         var attendance = records.Create(first.Id);
         records.AddCollaborator(attendance.Id, ana.Id);
         records.AddCollaborator(attendance.Id, ana.Id);
+        records.AddCollaborator(attendance.Id, bruno.Id);
         records.AddCollaborator(records.Create(second.Id).Id, ana.Id);
         Assert.Equal(new CollaboratorWorkshopsCountResponse(ana.Id, "Ana", 2), metrics.CountWorkshops().Single(item => item.CollaboratorId == ana.Id));
         Assert.Equal(0, metrics.CountWorkshops().Single(item => item.CollaboratorId == other.Id).WorkshopsCount);
-        Assert.Equal(new[] { ana.Id, other.Id, bruno.Id }, metrics.CountWorkshops().Select(item => item.CollaboratorId));
-        Assert.Equal(new[] { second.Id, empty.Id, first.Id }, metrics.CountCollaborators().Select(item => item.WorkshopId));
-        Assert.Equal(new[] { 1, 0, 1 }, metrics.CountCollaborators().Select(item => item.CollaboratorsCount));
+        Assert.Equal(new[] { ana.Id, bruno.Id, other.Id }, metrics.CountWorkshops().Select(item => item.CollaboratorId));
+        Assert.Equal(new[] { 2, 1, 0 }, metrics.CountWorkshops().Select(item => item.WorkshopsCount));
+        Assert.Equal(new[] { first.Id, second.Id, empty.Id }, metrics.CountCollaborators().Select(item => item.WorkshopId));
+        Assert.Equal(new[] { 2, 1, 0 }, metrics.CountCollaborators().Select(item => item.CollaboratorsCount));
         records.RemoveCollaborator(attendance.Id, ana.Id);
         Assert.Equal(1, metrics.CountWorkshops().Single(item => item.CollaboratorId == ana.Id).WorkshopsCount);
-        Assert.Equal(0, metrics.CountCollaborators().Single(item => item.WorkshopId == first.Id).CollaboratorsCount);
+        Assert.Equal(1, metrics.CountCollaborators().Single(item => item.WorkshopId == first.Id).CollaboratorsCount);
+        Assert.Equal(new[] { second.Id, first.Id, empty.Id }, metrics.CountCollaborators().Select(item => item.WorkshopId));
+    }
+
+    /// <summary>Breaks equal totals by case-insensitive name and then ID for both charts.</summary>
+    [Fact]
+    public void EqualTotalsUseNameAndIdAsTieBreakers()
+    {
+        var database = new InMemoryDatabase();
+        var people = new InMemoryCollaboratorRepository(database);
+        var workshops = new InMemoryWorkshopRepository(database);
+        var metrics = new MetricsService(people, workshops, new InMemoryAttendanceRecordRepository(database));
+        foreach (var name in new[] { "Zeta", "ana", "Ana" })
+        {
+            people.Create(name);
+            workshops.Create(name, InputRule.Timestamp("2026-01-01T12:00:00Z"), name);
+        }
+        Assert.Equal(new[] { 2, 3, 1 }, metrics.CountWorkshops().Select(item => item.CollaboratorId));
+        Assert.Equal(new[] { 2, 3, 1 }, metrics.CountCollaborators().Select(item => item.WorkshopId));
     }
 
     /// <summary>Exposes typed aggregate JSON using the development examples.</summary>

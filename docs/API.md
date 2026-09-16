@@ -150,7 +150,7 @@ Erros de binding retornam `400` com o campo e o formato esperado. Quando o JSON 
 
 ## `GET /api/metrics/colaboradores/workshops-count`
 
-Conta workshops distintos com presença registrada para todos os colaboradores. Retorna `200 OK` com uma lista ordenada por nome (sem distinguir maiúsculas) e ID como desempate:
+Conta workshops distintos com presença registrada para todos os colaboradores. Retorna `200 OK` com uma lista ordenada por `workshopsCount` decrescente, com nome (sem distinguir maiúsculas) e ID como desempate:
 
 ```json
 [
@@ -163,12 +163,12 @@ Inclui colaboradores sem presença com zero; sem colaboradores retorna `[]`. Nom
 
 ## `GET /api/metrics/workshops/colaboradores-count`
 
-Retorna `200 OK` com todos os workshops em ordem de nome (sem distinguir maiúsculas) e ID como desempate:
+Retorna `200 OK` com todos os workshops em ordem de `collaboratorsCount` decrescente, com nome (sem distinguir maiúsculas) e ID como desempate:
 
 ```json
 [
-  { "workshopId": 2, "name": "Angular", "collaboratorsCount": 0 },
-  { "workshopId": 1, "name": "Clean Code", "collaboratorsCount": 2 }
+  { "workshopId": 1, "name": "Clean Code", "collaboratorsCount": 2 },
+  { "workshopId": 2, "name": "Angular", "collaboratorsCount": 0 }
 ]
 ```
 

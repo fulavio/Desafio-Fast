@@ -33,7 +33,7 @@ export function seedMySql(execute = spawnSync) {
     throw new Error(
       "Seed MySQL falhou; esperado schema inicializado e conexao disponivel.",
     );
-  return "Seed MySQL concluido: 20 workshops trimestrais (2022–2026), 30 colaboradores, 20 atas e 480 participações de exemplo disponíveis. Registros anteriores foram preservados.";
+  return "Seed MySQL concluido.";
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {

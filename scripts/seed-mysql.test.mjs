@@ -50,6 +50,6 @@ test("seed summarizes the expanded examples after successful execution", () => {
   const commands = new FakeSeedCommands();
   assert.equal(
     seedMySql(commands.execute),
-    "Seed MySQL concluido: 20 workshops trimestrais (2022–2026), 30 colaboradores, 20 atas e 480 participações de exemplo disponíveis. Registros anteriores foram preservados.",
+    "Seed MySQL concluido.",
   );
 });
