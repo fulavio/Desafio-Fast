@@ -55,29 +55,29 @@ Para MySQL, prepare `.env` conforme `.env.example` e mantenha o Docker ativo. O 
 
 Os scripts usam `Development`, API na porta 5000 e frontend na 4200. Execute apenas um modo por vez e mantenha essas portas livres. Os logs aparecem no terminal; Ctrl+C encerra backend e frontend. Se um dos processos falhar, o outro também é encerrado. O MySQL continua ativo e o volume é preservado; para pará-lo, use `docker compose stop mysql`. Execute novamente o setup quando as dependências mudarem.
 
-### Execução separada
+## Dados de exemplo
 
-Backend:
+### Em memória
 
-```bash
-dotnet run --project backend/Fast.Workshops.Api
+No modo `InMemory`, o perfil local ativa `Development` e cria três workshops, quatro colaboradores e três atas com participações variadas. Os dados são reiniciados quando o backend encerra. Fora de `Development`, a memória começa vazia. O modo `MySql` não executa esse seed.
+
+### Semear o MySQL
+
+Com Docker ativo e `.env` configurado, execute:
+
+```powershell
+.\scripts\seed-mysql.ps1
 ```
 
-Frontend, em outro terminal:
+Ou, em Bash:
 
 ```bash
-npm --prefix frontend start
+bash ./scripts/seed-mysql.sh
 ```
 
-Acesse [http://localhost:4200](http://localhost:4200). A API roda em [http://localhost:5000/api/atas](http://localhost:5000/api/atas).
+O script inicia o MySQL do Compose, aguarda o healthcheck e, em um banco vazio, insere 30 colaboradores, 20 workshops, 20 atas e 480 participações. O calendário fixo cobre 2022 a 2026, com um workshop por trimestre, sempre na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h no offset -03:00. Cada workshop tem 24 participantes, com ausências alternadas de forma determinística pela posição nos exemplos, independentemente dos IDs do banco; cada colaborador participa de 16 encontros. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
 
-Com o backend em `Development` (perfil local padrão), acesse o [Swagger UI](http://localhost:5000/swagger) para consultar e executar os endpoints. O [documento OpenAPI](http://localhost:5000/swagger/v1/swagger.json) é gerado a partir dos controllers. Operações executadas pelo Swagger alteram o mesmo armazenamento usado pelo frontend.
-
-O frontend usa Angular 21, componentes standalone e testes Vitest pelo builder oficial do Angular. A URL da API está em `frontend/src/environments/environment.ts`. A origem CORS está em `backend/Fast.Workshops.Api/appsettings.json` e permite somente `http://localhost:4200` por padrão.
-
-A lista carrega automaticamente seis workshops por vez conforme a rolagem. O botão “Carregar mais encontros” é uma alternativa para teclado ou navegadores sem suporte ao carregamento automático. Cada card mostra o total de participantes e até sete nomes em duas linhas; os detalhes exibem todos.
-
-Filtre por workshop, data e colaborador. Os filtros ficam na URL e são preservados ao voltar. Nos detalhes, Remover exclui apenas a presença, mantendo o cadastro. Cadastros e inclusão de participantes estão disponíveis pela [API](docs/API.md).
+Pode ser executado novamente, sequencialmente, sem duplicar os exemplos. Reutiliza colaboradores pelo nome e workshops pelo nome e timestamp exato; se houver vários correspondentes, usa o menor ID. Preserva descrições editadas e outros registros; bancos já preenchidos podem exceder as quantidades de exemplo. Participações de exemplo removidas são recriadas ao executar o seed novamente. O seed é explícito e não é executado por `run-mysql` nem pelo startup da API. Os inserts são feitos em uma transação; o script não altera o schema nem apaga dados.
 
 ## MySQL com Docker Compose
 
@@ -105,30 +105,6 @@ O script `Repositories/MySql/schema.sql` cria as tabelas automaticamente somente
 
 Referências: [imagem oficial MySQL](https://hub.docker.com/_/mysql), [provider MySQL para EF Core](https://www.nuget.org/packages/MySql.EntityFrameworkCore/10.0.9).
 
-## Dados de exemplo
-
-### Em memória
-
-No modo `InMemory`, o perfil local ativa `Development` e cria três workshops, quatro colaboradores e três atas com participações variadas. Os dados são reiniciados quando o backend encerra. Fora de `Development`, a memória começa vazia. O modo `MySql` não executa esse seed.
-
-### Semear o MySQL
-
-Com Docker ativo e `.env` configurado, execute:
-
-```powershell
-.\scripts\seed-mysql.ps1
-```
-
-Ou, em Bash:
-
-```bash
-bash ./scripts/seed-mysql.sh
-```
-
-O script inicia o MySQL do Compose, aguarda o healthcheck e, em um banco vazio, insere 30 colaboradores, 20 workshops, 20 atas e 480 participações. O calendário fixo cobre 2022 a 2026, com um workshop por trimestre, sempre na segunda quinta-feira de janeiro, abril, julho e outubro, às 16h no offset -03:00. Cada workshop tem 24 participantes, com ausências alternadas de forma determinística pela posição nos exemplos, independentemente dos IDs do banco; cada colaborador participa de 16 encontros. Não exige API ou frontend em execução nem cliente MySQL instalado na máquina.
-
-Pode ser executado novamente, sequencialmente, sem duplicar os exemplos. Reutiliza colaboradores pelo nome e workshops pelo nome e timestamp exato; se houver vários correspondentes, usa o menor ID. Preserva descrições editadas e outros registros; bancos já preenchidos podem exceder as quantidades de exemplo. Participações de exemplo removidas são recriadas ao executar o seed novamente. O seed é explícito e não é executado por `run-mysql` nem pelo startup da API. Os inserts são feitos em uma transação; o script não altera o schema nem apaga dados.
-
 ## Validação
 
 Execute toda a validação, sem interação:
@@ -147,10 +123,30 @@ O script verifica formatação, build, lint e testes dos dois projetos. Consulte
 
 No Windows, os scripts `.ps1` usam `npm.cmd`. Para executar os `.sh`, use Git Bash com .NET e Node no PATH; o WSL requer suas próprias instalações de .NET e Node. Encerre os servidores de desenvolvimento antes do setup e da validação para evitar arquivos bloqueados no Windows.
 
+## Execução separada
+
+Backend:
+
+```bash
+dotnet run --project backend/Fast.Workshops.Api
+```
+
+Frontend, em outro terminal:
+
+```bash
+npm --prefix frontend start
+```
+
+Acesse [http://localhost:4200](http://localhost:4200). A API roda em [http://localhost:5000/api/atas](http://localhost:5000/api/atas).
+
+Com o backend em `Development` (perfil local padrão), acesse o [Swagger UI](http://localhost:5000/swagger) para consultar e executar os endpoints. O [documento OpenAPI](http://localhost:5000/swagger/v1/swagger.json) é gerado a partir dos controllers. Operações executadas pelo Swagger alteram o mesmo armazenamento usado pelo frontend.
+
+O frontend usa Angular 21, componentes standalone e testes Vitest pelo builder oficial do Angular. A URL da API está em `frontend/src/environments/environment.ts`. A origem CORS está em `backend/Fast.Workshops.Api/appsettings.json` e permite somente `http://localhost:4200` por padrão.
+
+A lista carrega automaticamente seis workshops por vez conforme a rolagem. O botão “Carregar mais encontros” é uma alternativa para teclado ou navegadores sem suporte ao carregamento automático. Cada card mostra o total de participantes e até sete nomes em duas linhas; os detalhes exibem todos.
+
+Filtre por workshop, data e colaborador. Os filtros ficam na URL e são preservados ao voltar. Nos detalhes, Remover exclui apenas a presença, mantendo o cadastro. Cadastros e inclusão de participantes estão disponíveis pela [API](docs/API.md).
+
 ## Contratos
 
 Os endpoints, payloads, validações e respostas de erro estão em [docs/API.md](docs/API.md).
-
-## Métricas de participação
-
-Acesse Métricas no cabeçalho (rota /metricas) para consultar barras de workshops por colaborador e pizza de colaboradores por workshop, com ng2-charts e Chart.js. As contagens vêm de duas requisições ao backend (uma por gráfico), incluem zeros e não dependem dos filtros ou da paginação da listagem. Gráficos e tabelas acessíveis apresentam os totais em ordem decrescente, com nome e ID como desempate; Atualizar métricas busca novamente os totais.
