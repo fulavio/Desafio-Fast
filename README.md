@@ -1,6 +1,6 @@
 # FAST Workshops
 
-Aplicação FullStack para cadastrar workshops, colaboradores e atas de presença e consultar a participação nos workshops trimestrais da FAST Soluções.
+Aplicação para consulta de workshops trimestrais e participação de colaboradores da FAST Soluções.
 
 ## Arquitetura
 
